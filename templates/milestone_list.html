@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Perkembangan Milestone - Sistem Monitoring Balita{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2>Milestone Perkembangan - {{ child['name'] }}</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{{ url_for('add_milestone', child_id=child['id']) }}" class="btn btn-success">+ Tambah Milestone</a>
+            <a href="{{ url_for('children') }}" class="btn btn-secondary">Kembali</a>
+        </div>
+    </div>
+    
+    {% if milestones %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Progress Perkembangan</h5>
+            <div class="progress">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ progress }}%;" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">
+                    {{ progress }}%
+                </div>
+            </div>
+            <small class="text-muted">{{ milestones | length }} milestone tercatat</small>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Milestone</th>
+                    <th>Status</th>
+                    <th>Catatan</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in milestones %}
+                <tr class="{% if m['status'] == 'done' %}table-success{% endif %}">
+                    <td><strong>{{ m['milestone'] }}</strong></td>
+                    <td>
+                        {% if m['status'] == 'done' %}
+                        <span class="badge bg-success">Tercapai</span>
+                        {% else %}
+                        <span class="badge bg-warning">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ m['noted'] if m['noted'] else '-' }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('toggle_milestone', child_id=child['id'], milestone_id=m['id']) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                {% if m['status'] == 'done' %}
+                                Tandai Pending
+                                {% else %}
+                                Tandai Tercapai
+                                {% endif %}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        Belum ada milestone tercatat. <a href="{{ url_for('add_milestone', child_id=child['id']) }}">Tambah milestone sekarang</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

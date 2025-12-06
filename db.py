@@ -42,10 +42,11 @@ class MySQLDBWrapper:
 
 
 def get_db():
+    """Return a DB connection/wrapper stored on flask.g."""
     db = getattr(g, '_database', None)
     if db is None:
         if DB_TYPE == 'mysql':
-            # lazy import to avoid requiring mysql lib when not used
+            # lazy import so mysql dependency is optional for sqlite users
             import mysql.connector
 
             host = os.environ.get('MYSQL_HOST', 'localhost')
@@ -53,6 +54,7 @@ def get_db():
             user = os.environ.get('MYSQL_USER', 'root')
             password = os.environ.get('MYSQL_PASS', '')
             database = os.environ.get('MYSQL_DB', 'balita_db')
+
             conn = mysql.connector.connect(
                 host=host, port=port, user=user, password=password, database=database
             )
@@ -68,9 +70,12 @@ def get_db():
 
 
 def init_db():
+    """Create tables if they don't exist.
+
+    This function is intentionally idempotent and safe to call at startup.
+    """
     db = get_db()
 
-    # Use the wrapper/cursor semantics depending on DB type
     def exec_sql(sql):
         if DB_TYPE == 'mysql':
             cur = db.execute(sql)
@@ -83,58 +88,63 @@ def init_db():
             cur.execute(sql)
             cur.close()
 
-    # Create tables (SQL works for both SQLite and MySQL)
-    exec_sql('''
+    # Choose an appropriate PRIMARY KEY clause per DB
+    if DB_TYPE == 'mysql':
+        pk = 'INT PRIMARY KEY AUTO_INCREMENT'
+    else:
+        pk = 'INTEGER PRIMARY KEY AUTOINCREMENT'
+
+    exec_sql(f"""
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id {pk},
             username TEXT UNIQUE,
             password TEXT
         )
-    ''')
-    exec_sql('''
+    """)
+
+    exec_sql(f"""
         CREATE TABLE IF NOT EXISTS children (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id {pk},
             user_id INTEGER,
             name TEXT,
             dob TEXT,
             gender TEXT
         )
-    ''')
-    exec_sql('''
+    """)
+
+    exec_sql(f"""
         CREATE TABLE IF NOT EXISTS growth (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id {pk},
             child_id INTEGER,
             record_date TEXT,
             weight REAL,
             height REAL,
             head_circ REAL
         )
-    ''')
-    exec_sql('''
+    """)
+
+    exec_sql(f"""
         CREATE TABLE IF NOT EXISTS development (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id {pk},
             child_id INTEGER,
             milestone TEXT,
             status TEXT,
             noted TEXT
         )
-    ''')
-    exec_sql('''
+    """)
+
+    exec_sql(f"""
         CREATE TABLE IF NOT EXISTS immunization (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id {pk},
             child_id INTEGER,
             vaccine TEXT,
             date_given TEXT,
             status TEXT
         )
-    ''')
+    """)
 
-    # Commit when using sqlite connection or wrapper
     try:
-        if DB_TYPE == 'mysql':
-            db.commit()
-        else:
-            db.commit()
+        db.commit()
     except Exception:
         pass
 
@@ -143,9 +153,6 @@ def close_connection(exception=None):
     db = getattr(g, '_database', None)
     if db is not None:
         try:
-            if DB_TYPE == 'mysql':
-                db.close()
-            else:
-                db.close()
+            db.close()
         except Exception:
             pass

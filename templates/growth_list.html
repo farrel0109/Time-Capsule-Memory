@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Data Pertumbuhan - Sistem Monitoring Balita{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2>Data Pertumbuhan - {{ child['name'] }}</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{{ url_for('add_growth', child_id=child['id']) }}" class="btn btn-success">+ Tambah Data</a>
+            <a href="{{ url_for('children') }}" class="btn btn-secondary">Kembali</a>
+        </div>
+    </div>
+    
+    {% if records %}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Grafik Berat Badan</h5>
+                    <canvas id="weightChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Grafik Tinggi Badan</h5>
+                    <canvas id="heightChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <h4 class="mt-4">Data Rinci</h4>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Tanggal</th>
+                    <th>Berat (kg)</th>
+                    <th>Tinggi (cm)</th>
+                    <th>Lingkar Kepala (cm)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record['record_date'] }}</td>
+                    <td>{{ record['weight'] }}</td>
+                    <td>{{ record['height'] }}</td>
+                    <td>{{ record['head_circ'] if record['head_circ'] else '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        Belum ada data pertumbuhan. <a href="{{ url_for('add_growth', child_id=child['id']) }}">Tambah data pertumbuhan sekarang</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    {% if records %}
+    // Prepare data for charts
+    const records = {{ records | tojson }};
+    const dates = records.map(r => r['record_date']).reverse();
+    const weights = records.map(r => parseFloat(r['weight'])).reverse();
+    const heights = records.map(r => parseFloat(r['height'])).reverse();
+    
+    // Weight Chart
+    const weightCtx = document.getElementById('weightChart').getContext('2d');
+    const weightChart = new Chart(weightCtx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Berat Badan (kg)',
+                data: weights,
+                borderColor: '#FF6B9D',
+                backgroundColor: 'rgba(255, 107, 157, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 5,
+                pointBackgroundColor: '#FF6B9D'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    title: {
+                        display: true,
+                        text: 'Berat (kg)'
+                    }
+                }
+            }
+        }
+    });
+    
+    // Height Chart
+    const heightCtx = document.getElementById('heightChart').getContext('2d');
+    const heightChart = new Chart(heightCtx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Tinggi Badan (cm)',
+                data: heights,
+                borderColor: '#4ECDC4',
+                backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 5,
+                pointBackgroundColor: '#4ECDC4'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    title: {
+                        display: true,
+                        text: 'Tinggi (cm)'
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}

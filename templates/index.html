@@ -1,13 +1,116 @@
 {% extends 'base.html' %}
 {% block content %}
-  <h1>Dashboard</h1>
-  <div class="row">
-    <div class="col-md-4">
-      <div class="card p-3">
-        <h5>Total Anak</h5>
-        <p class="display-6">{{ total_children }}</p>
-        <a href="/children" class="btn btn-sm btn-primary">Lihat Anak</a>
-      </div>
+<div class="container-fluid mt-4">
+    <h1 class="mb-4">Dashboard Monitoring Balita</h1>
+    
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-light text-dark">
+                <div class="card-body text-center">
+                    <h6 class="card-subtitle mb-2 text-muted">Total Anak</h6>
+                    <h2 class="display-5">{{ total_children }}</h2>
+                    <a href="{{ url_for('children') }}" class="btn btn-sm btn-primary mt-2">Kelola Anak</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-subtitle mb-2">Data Pertumbuhan</h6>
+                    <h5>Lihat grafik perkembangan berat dan tinggi badan</h5>
+                    <a href="{{ url_for('children') }}" class="btn btn-sm btn-light mt-2">Lihat Data</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-subtitle mb-2">Milestone</h6>
+                    <h5>Pantau pencapaian perkembangan</h5>
+                    <a href="{{ url_for('children') }}" class="btn btn-sm btn-light mt-2">Lihat Data</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h6 class="card-subtitle mb-2">Imunisasi</h6>
+                    <h5>Catat status vaksinasi lengkap</h5>
+                    <a href="{{ url_for('children') }}" class="btn btn-sm btn-dark mt-2">Lihat Data</a>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
+    
+    <!-- Milestone Summary -->
+    {% if milestone_data %}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Progress Milestone Setiap Anak</h5>
+                </div>
+                <div class="card-body">
+                    {% for m in milestone_data %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>{{ m['name'] }}</strong>
+                            <span class="badge bg-info">{{ m['done'] if m['done'] else 0 }}/{{ m['total'] if m['total'] else 0 }}</span>
+                        </div>
+                        <div class="progress">
+                            {% set percentage = (m['done'] / m['total'] * 100) if m['total'] and m['total'] > 0 else 0 %}
+                            <div class="progress-bar bg-success" style="width: {{ percentage }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Immunization Summary -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Status Imunisasi Setiap Anak</h5>
+                </div>
+                <div class="card-body">
+                    {% for i in immunization_data %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>{{ i['name'] }}</strong>
+                            <span class="badge bg-info">{{ i['done'] if i['done'] else 0 }}/{{ i['total'] if i['total'] else 0 }}</span>
+                        </div>
+                        <div class="progress">
+                            {% set percentage = (i['done'] / i['total'] * 100) if i['total'] and i['total'] > 0 else 0 %}
+                            <div class="progress-bar bg-warning" style="width: {{ percentage }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Aksi Cepat</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('add_child') }}" class="btn btn-success">+ Tambah Anak Baru</a>
+                        <a href="{{ url_for('children') }}" class="btn btn-primary">Kelola Data Anak</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

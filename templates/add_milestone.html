@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Tambah Milestone - Sistem Monitoring Balita{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="mb-4">Tambah Milestone Perkembangan - {{ child['name'] }}</h2>
+            
+            <div class="alert alert-info">
+                <strong>Contoh Milestone:</strong>
+                <ul>
+                    <li>Tersenyum spontan</li>
+                    <li>Mengikuti objek dengan mata</li>
+                    <li>Mulai menggenggam</li>
+                    <li>Bisa tengkurap</li>
+                    <li>Duduk tanpa bantuan</li>
+                    <li>Merangkak</li>
+                    <li>Berdiri</li>
+                    <li>Berjalan</li>
+                    <li>Mengatakan kata pertama</li>
+                </ul>
+            </div>
+            
+            <form method="POST" class="needs-validation" novalidate>
+                <div class="mb-3">
+                    <label for="milestone" class="form-label">Milestone / Pencapaian</label>
+                    <input type="text" class="form-control" id="milestone" name="milestone" placeholder="Misal: Mulai tengkurap" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-control" id="status" name="status" required>
+                        <option value="">-- Pilih Status --</option>
+                        <option value="done">Tercapai</option>
+                        <option value="pending">Belum / Dalam Proses</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="noted" class="form-label">Catatan - Opsional</label>
+                    <textarea class="form-control" id="noted" name="noted" rows="3" placeholder="Catatan tambahan tentang milestone ini"></textarea>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Simpan Milestone</button>
+                    <a href="{{ url_for('milestone_list', child_id=child['id']) }}" class="btn btn-secondary">Batal</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.querySelectorAll('.needs-validation');
+            Array.prototype.slice.call(forms).forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    }());
+</script>
+{% endblock %}

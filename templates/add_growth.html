@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Tambah Data Pertumbuhan - Sistem Monitoring Balita{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="mb-4">Tambah Data Pertumbuhan - {{ child['name'] }}</h2>
+            
+            <form method="POST" class="needs-validation" novalidate>
+                <div class="mb-3">
+                    <label for="record_date" class="form-label">Tanggal Pemeriksaan</label>
+                    <input type="date" class="form-control" id="record_date" name="record_date" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="weight" class="form-label">Berat Badan (kg)</label>
+                    <input type="number" class="form-control" id="weight" name="weight" step="0.1" placeholder="5.5" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="height" class="form-label">Tinggi Badan (cm)</label>
+                    <input type="number" class="form-control" id="height" name="height" step="0.1" placeholder="65.0" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="head_circ" class="form-label">Lingkar Kepala (cm) - Opsional</label>
+                    <input type="number" class="form-control" id="head_circ" name="head_circ" step="0.1" placeholder="40.5">
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Simpan Data</button>
+                    <a href="{{ url_for('growth_list', child_id=child['id']) }}" class="btn btn-secondary">Batal</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.querySelectorAll('.needs-validation');
+            Array.prototype.slice.call(forms).forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    }());
+</script>
+{% endblock %}

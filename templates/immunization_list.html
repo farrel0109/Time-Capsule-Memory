@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Imunisasi - Sistem Monitoring Balita{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2>Data Imunisasi - {{ child['name'] }}</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{{ url_for('add_immunization', child_id=child['id']) }}" class="btn btn-success">+ Tambah Vaksinasi</a>
+            <a href="{{ url_for('children') }}" class="btn btn-secondary">Kembali</a>
+        </div>
+    </div>
+    
+    {% if vaccinations %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Status Imunisasi</h5>
+            <p>
+                <strong>Total:</strong> {{ total }}<br>
+                <strong>Sudah:</strong> <span class="badge bg-success">{{ done }}</span><br>
+                <strong>Pending:</strong> <span class="badge bg-warning">{{ total - done }}</span>
+            </p>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Vaksin</th>
+                    <th>Tanggal</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in vaccinations %}
+                <tr class="{% if v['status'] == 'done' %}table-success{% endif %}">
+                    <td><strong>{{ v['vaccine'] }}</strong></td>
+                    <td>{{ v['date_given'] }}</td>
+                    <td>
+                        {% if v['status'] == 'done' %}
+                        <span class="badge bg-success">Selesai</span>
+                        {% else %}
+                        <span class="badge bg-warning">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ url_for('toggle_immunization', child_id=child['id'], vacc_id=v['id']) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                {% if v['status'] == 'done' %}
+                                Tandai Pending
+                                {% else %}
+                                Tandai Selesai
+                                {% endif %}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        Belum ada vaksinasi tercatat. <a href="{{ url_for('add_immunization', child_id=child['id']) }}">Tambah vaksinasi sekarang</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

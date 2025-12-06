@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Tambah Vaksinasi - Sistem Monitoring Balita{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="mb-4">Tambah Vaksinasi - {{ child['name'] }}</h2>
+            
+            <div class="alert alert-info">
+                <strong>Vaksin Wajib di Indonesia (Jadwal Imunisasi Dasar):</strong>
+                <ul>
+                    <li>BCG - 0-1 bulan</li>
+                    <li>Hepatitis B - 0-7 hari</li>
+                    <li>Polio - 2, 3, 4 bulan</li>
+                    <li>Pentavalent (DPT, Hib, Hepatitis B) - 2, 3, 4 bulan</li>
+                    <li>PCV (Pneumococcal) - 2, 4, 12-15 bulan</li>
+                    <li>Rotavirus - 2, 3, 4 bulan</li>
+                    <li>MMR - 9 bulan</li>
+                    <li>Tifoid - 2-3 tahun</li>
+                    <li>Varicella - 1-2 tahun</li>
+                </ul>
+            </div>
+            
+            <form method="POST" class="needs-validation" novalidate>
+                <div class="mb-3">
+                    <label for="vaccine" class="form-label">Nama Vaksin</label>
+                    <input type="text" class="form-control" id="vaccine" name="vaccine" placeholder="Misal: BCG" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="date_given" class="form-label">Tanggal Vaksinasi</label>
+                    <input type="date" class="form-control" id="date_given" name="date_given" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-control" id="status" name="status" required>
+                        <option value="">-- Pilih Status --</option>
+                        <option value="done">Selesai</option>
+                        <option value="pending">Belum / Terjadwal</option>
+                    </select>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Simpan Vaksinasi</button>
+                    <a href="{{ url_for('immunization_list', child_id=child['id']) }}" class="btn btn-secondary">Batal</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.querySelectorAll('.needs-validation');
+            Array.prototype.slice.call(forms).forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    }());
+</script>
+{% endblock %}
