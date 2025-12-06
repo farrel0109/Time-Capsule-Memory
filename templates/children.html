@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>Daftar Anak</h2>
+  <a class="btn btn-sm btn-success mb-2" href="/children/add">Tambah Anak</a>
+  <table class="table">
+    <thead><tr><th>Nama</th><th>Tanggal Lahir</th><th>Jenis Kelamin</th></tr></thead>
+    <tbody>
+      {% for c in children %}
+      <tr>
+        <td>{{ c['name'] }}</td>
+        <td>{{ c['dob'] }}</td>
+        <td>{{ c['gender'] }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3">Belum ada data anak.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
