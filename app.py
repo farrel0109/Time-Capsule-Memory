@@ -32,7 +32,7 @@ def index():
         SELECT c.id, c.name, g.weight, g.height, g.record_date 
         FROM children c 
         LEFT JOIN growth g ON c.id = g.child_id 
-        WHERE c.user_id = ? 
+        WHERE g.user_id = ? 
         ORDER BY g.record_date DESC LIMIT 5
     ''', (user_id,))
     latest_growth = cur.fetchall()
@@ -115,7 +115,7 @@ def children():
     user_id = session.get('user_id')
     if not user_id:
         return redirect(url_for('login'))
-    cur = db.execute('SELECT id,name,dob,gender FROM children WHERE user_id=?', (user_id,))
+    cur = db.execute('SELECT id,name,dob FROM children WHERE user_id=?', (user_id,))
     children = cur.fetchall()
     return render_template('children.html', children=children)
 
