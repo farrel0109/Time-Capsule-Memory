@@ -3,8 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="BabyGrow - Aplikasi monitoring kesehatan dan perkembangan balita dengan fitur kapsul waktu">
-    <title>BabyGrow - Asisten Digital & Kapsul Waktu untuk Si Kecil</title>
+    
+    <!-- SEO Meta Tags -->
+    <title>BabyGrow - Aplikasi Tumbuh Kembang Anak & Kapsul Waktu Digital</title>
+    <meta name="description" content="BabyGrow: Aplikasi monitoring kesehatan balita dengan fitur Kapsul Waktu Digital. Pantau tumbuh kembang, jadwal imunisasi, dan simpan kenangan indah untuk masa depan si kecil. Gratis!">
+    <meta name="keywords" content="aplikasi tumbuh kembang anak gratis, aplikasi buku KIA digital, baby tracker app Indonesia, simpan foto anak aman, monitoring balita">
+    <meta name="author" content="BabyGrow Team">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="BabyGrow - Asisten Digital & Kapsul Waktu untuk Si Kecil">
+    <meta property="og:description" content="Pantau tumbuh kembang balita dengan standar WHO, jadwal imunisasi, dan simpan kenangan dalam Kapsul Waktu Digital.">
+    <meta property="og:type" content="website">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,204 +23,740 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Primary Palette
+                        'peach': {
+                            50: '#FFFBF7',
+                            100: '#FFF5ED',
+                            200: '#FFECD2',
+                            300: '#FFE0B5',
+                            400: '#FFD9B3',
+                            500: '#FFCF9E',
+                        },
+                        'blush': {
+                            100: '#FEE2E0',
+                            200: '#FCCFC9',
+                            300: '#FCB9B2',
+                            400: '#F9A099',
+                            500: '#F58B84',
+                        },
+                        'lavender': {
+                            100: '#E8E8F4',
+                            200: '#D1D1E8',
+                            300: '#B8B8DC',
+                            400: '#9999C9',
+                            500: '#7A7AB6',
+                        },
+                        'mint': {
+                            100: '#E6F7F1',
+                            200: '#CDF0E3',
+                            300: '#B5EAD7',
+                            400: '#8EDCC2',
+                            500: '#67CEAD',
+                        },
+                        'warm-brown': '#5D4E37',
+                        'cloud': '#FEFEFE',
+                    },
+                    fontFamily: {
+                        'heading': ['Quicksand', 'Nunito', 'sans-serif'],
+                        'body': ['Inter', 'Nunito Sans', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 3s ease-in-out infinite',
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(30px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     
     <style>
-        .landing-hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            background: linear-gradient(135deg, var(--color-peach) 0%, var(--color-lavender) 50%, var(--color-mint) 100%);
-            position: relative;
-            overflow: hidden;
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FFECD2;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FCB9B2;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #F9A099;
         }
         
-        .landing-hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FFFFFF' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            opacity: 0.3;
+        /* Glass Effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
         
-        .landing-content {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-            max-width: 700px;
-            margin: 0 auto;
-            padding: var(--space-xl);
-        }
-        
-        .landing-logo {
-            font-size: 4rem;
-            margin-bottom: var(--space-md);
-            animation: bounce 2s ease infinite;
-        }
-        
-        .landing-title {
-            font-family: var(--font-heading);
-            font-size: 3rem;
-            font-weight: 700;
-            color: var(--color-text-primary);
-            margin-bottom: var(--space-md);
-        }
-        
-        .landing-title span {
-            background: linear-gradient(135deg, var(--color-blush-dark), var(--color-lavender-dark));
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #FCB9B2 0%, #B8B8DC 50%, #B5EAD7 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         
-        .landing-subtitle {
-            font-size: 1.25rem;
-            color: var(--color-text-secondary);
-            margin-bottom: var(--space-xl);
-            line-height: 1.8;
+        /* Floating Shapes */
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.6;
         }
         
-        .landing-buttons {
-            display: flex;
-            gap: var(--space-md);
-            justify-content: center;
-            flex-wrap: wrap;
+        /* Animated Envelope */
+        .envelope-animation {
+            animation: float 4s ease-in-out infinite;
         }
         
-        .landing-features {
-            padding: var(--space-2xl) 0;
-            background: var(--color-cloud);
-        }
+        /* Stagger Animation */
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
         
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: var(--space-lg);
-            margin-top: var(--space-xl);
+        /* Pulse Ring */
+        .pulse-ring {
+            animation: pulseRing 2s ease-out infinite;
         }
-        
-        .feature-card {
-            text-align: center;
-            padding: var(--space-xl);
-        }
-        
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: var(--space-md);
-        }
-        
-        .feature-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: var(--space-sm);
-        }
-        
-        .feature-text {
-            color: var(--color-text-secondary);
-            line-height: 1.6;
-        }
-        
-        @media (max-width: 768px) {
-            .landing-title {
-                font-size: 2rem;
-            }
-            
-            .landing-subtitle {
-                font-size: 1rem;
-            }
+        @keyframes pulseRing {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
         }
     </style>
 </head>
-<body>
-    <!-- Hero Section -->
-    <section class="landing-hero">
-        <div class="landing-content animate-fadeIn">
-            <div class="landing-logo">🍼</div>
-            <h1 class="landing-title">
-                <span>BabyGrow</span>
-            </h1>
-            <p class="landing-subtitle">
-                Asisten digital untuk memantau kesehatan dan perkembangan si kecil, 
-                sekaligus menyimpan kenangan indah dalam <strong>Kapsul Waktu</strong> 
-                untuk dibuka di masa depan. 💕
-            </p>
-            <div class="landing-buttons">
-                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-person-plus"></i> Daftar Gratis
-                </a>
-                <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-lg">
-                    <i class="bi bi-box-arrow-in-right"></i> Masuk
-                </a>
-            </div>
-        </div>
-    </section>
+<body class="font-body bg-peach-50 text-warm-brown overflow-x-hidden">
     
-    <!-- Features Section -->
-    <section class="landing-features">
-        <div class="container">
-            <h2 class="text-center" style="font-size: 2rem;">Fitur Utama</h2>
-            <p class="text-center text-muted">Semua yang Anda butuhkan untuk memantau tumbuh kembang si kecil</p>
-            
-            <div class="feature-grid">
-                <div class="card feature-card stagger-item">
-                    <div class="feature-icon">📊</div>
-                    <h3 class="feature-title">Pantau Pertumbuhan</h3>
-                    <p class="feature-text">
-                        Catat berat, tinggi, dan lingkar kepala. Lihat grafik perkembangan dengan standar WHO.
-                    </p>
+    <!-- ============== NAVBAR ============== -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-peach-300/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <a href="/" class="flex items-center gap-2 group">
+                    <span class="text-3xl group-hover:animate-bounce-slow transition-transform">🍼</span>
+                    <span class="font-heading font-bold text-xl gradient-text">BabyGrow</span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="#fitur" class="text-warm-brown/70 hover:text-warm-brown transition-colors font-medium">Fitur</a>
+                    <a href="#kapsul-waktu" class="text-warm-brown/70 hover:text-warm-brown transition-colors font-medium">Kapsul Waktu</a>
+                    <a href="#keamanan" class="text-warm-brown/70 hover:text-warm-brown transition-colors font-medium">Keamanan</a>
                 </div>
                 
-                <div class="card feature-card stagger-item">
-                    <div class="feature-icon">🎯</div>
-                    <h3 class="feature-title">Milestone Tracker</h3>
-                    <p class="feature-text">
-                        Pantau pencapaian perkembangan motorik, bahasa, sosial, dan kognitif si kecil.
-                    </p>
-                </div>
-                
-                <div class="card feature-card stagger-item">
-                    <div class="feature-icon">💉</div>
-                    <h3 class="feature-title">Jadwal Imunisasi</h3>
-                    <p class="feature-text">
-                        Catat dan dapatkan pengingat jadwal vaksinasi sesuai program imunisasi nasional.
-                    </p>
-                </div>
-                
-                <div class="card feature-card stagger-item">
-                    <div class="feature-icon">💌</div>
-                    <h3 class="feature-title">Kapsul Waktu</h3>
-                    <p class="feature-text">
-                        Tulis surat, simpan foto & rekaman suara untuk dibuka si kecil saat dewasa nanti.
-                    </p>
+                <!-- CTA Buttons -->
+                <div class="flex items-center gap-3">
+                    <a href="{{ url_for('login') }}" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-warm-brown font-medium hover:bg-peach-200 rounded-full transition-all">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        Masuk
+                    </a>
+                    <a href="{{ url_for('register') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blush-300 to-blush-400 text-white font-semibold rounded-full shadow-lg shadow-blush-300/40 hover:shadow-xl hover:shadow-blush-300/50 hover:-translate-y-0.5 transition-all">
+                        <i class="bi bi-person-plus"></i>
+                        <span class="hidden sm:inline">Daftar Gratis</span>
+                        <span class="sm:hidden">Daftar</span>
+                    </a>
                 </div>
             </div>
         </div>
+    </nav>
+
+    <!-- ============== HERO SECTION ============== -->
+    <section class="relative min-h-screen flex items-center pt-20 overflow-hidden">
+        <!-- Background Shapes -->
+        <div class="shape w-96 h-96 bg-blush-200 top-20 -left-48"></div>
+        <div class="shape w-80 h-80 bg-lavender-200 top-40 right-0"></div>
+        <div class="shape w-64 h-64 bg-mint-200 bottom-20 left-1/3"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <!-- Left Content -->
+                <div class="text-center lg:text-left space-y-6 opacity-0 animate-fade-in-up">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-mint-100 text-mint-500 rounded-full text-sm font-medium">
+                        <span class="w-2 h-2 bg-mint-400 rounded-full animate-pulse"></span>
+                        Gratis untuk Semua Orang Tua
+                    </div>
+                    
+                    <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
+                        Pantau Tumbuh Kembang,
+                        <span class="gradient-text block">Simpan Kenangan Selamanya</span>
+                    </h1>
+                    
+                    <p class="text-lg text-warm-brown/70 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                        Aplikasi monitoring balita dengan fitur <strong class="text-warm-brown">Kapsul Waktu Digital</strong>. 
+                        Gratis, aman, dan penuh warna untuk perjalanan menjadi orang tua.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                        <a href="{{ url_for('register') }}" class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blush-300 to-blush-400 text-white font-bold text-lg rounded-full shadow-xl shadow-blush-300/40 hover:shadow-2xl hover:shadow-blush-300/50 hover:-translate-y-1 transition-all group">
+                            <i class="bi bi-rocket-takeoff group-hover:animate-bounce"></i>
+                            Mulai Sekarang - Gratis
+                        </a>
+                        <a href="#fitur" class="inline-flex items-center justify-center gap-2 px-6 py-4 border-2 border-lavender-300 text-warm-brown font-semibold rounded-full hover:bg-lavender-100 transition-all">
+                            <i class="bi bi-play-circle"></i>
+                            Lihat Fitur
+                        </a>
+                    </div>
+                    
+                    <!-- Trust Badges -->
+                    <div class="flex items-center gap-6 justify-center lg:justify-start pt-4">
+                        <div class="flex items-center gap-2 text-sm text-warm-brown/60">
+                            <i class="bi bi-shield-check text-mint-400 text-lg"></i>
+                            Data Terenkripsi
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-warm-brown/60">
+                            <i class="bi bi-graph-up text-lavender-400 text-lg"></i>
+                            Standar WHO
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Visual - Device Mockup -->
+                <div class="relative opacity-0 animate-fade-in-up stagger-2">
+                    <div class="relative mx-auto w-full max-w-lg">
+                        <!-- Floating decorative elements -->
+                        <div class="absolute -top-8 -left-8 w-20 h-20 bg-blush-200 rounded-2xl rotate-12 animate-float"></div>
+                        <div class="absolute -bottom-4 -right-4 w-16 h-16 bg-mint-200 rounded-full animate-float" style="animation-delay: 1s;"></div>
+                        
+                        <!-- Main Card / Mockup -->
+                        <div class="relative bg-white rounded-3xl shadow-2xl p-6 border border-peach-200">
+                            <!-- Dashboard Preview -->
+                            <div class="bg-peach-100 rounded-2xl p-4 mb-4">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-blush-300 to-lavender-300 rounded-full flex items-center justify-center text-2xl">👶</div>
+                                    <div>
+                                        <p class="font-heading font-bold text-warm-brown">Anisa Putri</p>
+                                        <p class="text-sm text-warm-brown/60">1 tahun 3 bulan</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Stats Grid -->
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div class="bg-white rounded-xl p-3 text-center">
+                                        <p class="text-2xl font-bold text-warm-brown">9.8</p>
+                                        <p class="text-xs text-warm-brown/60">kg</p>
+                                    </div>
+                                    <div class="bg-white rounded-xl p-3 text-center">
+                                        <p class="text-2xl font-bold text-warm-brown">76</p>
+                                        <p class="text-xs text-warm-brown/60">cm</p>
+                                    </div>
+                                    <div class="bg-white rounded-xl p-3 text-center">
+                                        <p class="text-2xl font-bold text-mint-400">✓</p>
+                                        <p class="text-xs text-warm-brown/60">Sehat</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Feature Cards -->
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3 p-3 bg-lavender-100 rounded-xl">
+                                    <span class="text-xl">💉</span>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-sm">Imunisasi DPT</p>
+                                        <p class="text-xs text-warm-brown/60">Jadwal: 20 Des 2024</p>
+                                    </div>
+                                    <span class="text-xs bg-blush-200 text-blush-500 px-2 py-1 rounded-full">Segera</span>
+                                </div>
+                                <div class="flex items-center gap-3 p-3 bg-mint-100 rounded-xl">
+                                    <span class="text-xl">💌</span>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-sm">Kapsul Waktu</p>
+                                        <p class="text-xs text-warm-brown/60">2 surat tersimpan</p>
+                                    </div>
+                                    <span class="text-xs bg-mint-200 text-mint-500 px-2 py-1 rounded-full">Aktif</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+            <span class="text-sm text-warm-brown/50">Scroll untuk melihat lebih</span>
+            <i class="bi bi-chevron-down text-xl text-blush-400 animate-bounce"></i>
+        </div>
     </section>
-    
-    <!-- CTA Section -->
-    <section style="background: linear-gradient(135deg, var(--color-lavender), var(--color-blush)); padding: var(--space-2xl) 0; text-align: center;">
-        <div class="container">
-            <h2 style="color: var(--color-text-primary); margin-bottom: var(--space-md);">
-                Mulai Dokumentasikan Perjalanan Si Kecil
+
+    <!-- ============== PROBLEM SECTION ============== -->
+    <section class="py-20 bg-white relative">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold mb-6">
+                Apakah Anda Mengalami Ini? 🤔
             </h2>
-            <p style="color: var(--color-text-secondary); margin-bottom: var(--space-lg); max-width: 500px; margin-left: auto; margin-right: auto;">
-                Daftar sekarang dan buat kenangan yang akan bertahan selamanya.
+            <p class="text-lg text-warm-brown/70 mb-12 max-w-2xl mx-auto">
+                Sering kehilangan buku KIA? Atau galeri HP penuh screenshot pekerjaan hingga foto si kecil terselip dan sulit dicari?
             </p>
-            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
-                <i class="bi bi-rocket-takeoff"></i> Mulai Sekarang
-            </a>
+            
+            <div class="grid sm:grid-cols-3 gap-6">
+                <div class="p-6 bg-peach-50 rounded-2xl border border-peach-200 hover:border-blush-300 transition-colors group">
+                    <div class="w-14 h-14 bg-peach-200 rounded-xl flex items-center justify-center text-3xl mb-4 mx-auto group-hover:scale-110 transition-transform">📉</div>
+                    <h3 class="font-heading font-semibold text-lg mb-2">Grafik yang Ribet</h3>
+                    <p class="text-warm-brown/60 text-sm">Sulit memahami apakah berat badan anak sudah ideal menurut standar medis.</p>
+                </div>
+                
+                <div class="p-6 bg-lavender-50 rounded-2xl border border-lavender-200 hover:border-lavender-400 transition-colors group">
+                    <div class="w-14 h-14 bg-lavender-200 rounded-xl flex items-center justify-center text-3xl mb-4 mx-auto group-hover:scale-110 transition-transform">💉</div>
+                    <h3 class="font-heading font-semibold text-lg mb-2">Lupa Jadwal Vaksin</h3>
+                    <p class="text-warm-brown/60 text-sm">Jadwal imunisasi yang padat membuatnya sering terlewat atau terlambat.</p>
+                </div>
+                
+                <div class="p-6 bg-mint-50 rounded-2xl border border-mint-200 hover:border-mint-400 transition-colors group">
+                    <div class="w-14 h-14 bg-mint-200 rounded-xl flex items-center justify-center text-3xl mb-4 mx-auto group-hover:scale-110 transition-transform">📸</div>
+                    <h3 class="font-heading font-semibold text-lg mb-2">Momen Terselip</h3>
+                    <p class="text-warm-brown/60 text-sm">Foto "langkah pertama" hilang tertumpuk ribuan file lain di galeri HP.</p>
+                </div>
+            </div>
         </div>
     </section>
-    
-    <!-- Footer -->
-    <footer style="background: var(--color-cloud); padding: var(--space-lg) 0; text-align: center;">
-        <p class="text-muted text-sm" style="margin: 0;">
-            🍼 BabyGrow — Dibuat dengan 💕 untuk si kecil
-        </p>
+
+    <!-- ============== FEATURES SECTION ============== -->
+    <section id="fitur" class="py-20 bg-gradient-to-b from-peach-50 to-white relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-blush-100 text-blush-500 rounded-full text-sm font-medium mb-4">
+                    ✨ Fitur Lengkap
+                </span>
+                <h2 class="font-heading text-3xl sm:text-4xl font-bold mb-4">
+                    Semua yang Anda Butuhkan, <span class="gradient-text">Dalam Satu Aplikasi</span>
+                </h2>
+                <p class="text-lg text-warm-brown/70 max-w-2xl mx-auto">
+                    Dikembangkan dengan standar medis terpercaya dan sentuhan emosional untuk setiap orang tua.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8 lg:gap-12">
+                <!-- Pillar 1: Health & Growth -->
+                <div class="bg-white rounded-3xl p-8 shadow-xl border border-peach-100 hover:shadow-2xl transition-shadow">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-16 h-16 bg-gradient-to-br from-lavender-200 to-lavender-300 rounded-2xl flex items-center justify-center">
+                            <i class="bi bi-graph-up-arrow text-3xl text-lavender-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-heading text-xl font-bold">Kesehatan & Pertumbuhan</h3>
+                            <p class="text-warm-brown/60">Standar Medis Terpercaya</p>
+                        </div>
+                    </div>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="w-6 h-6 bg-mint-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i class="bi bi-check text-mint-500"></i>
+                            </span>
+                            <div>
+                                <p class="font-medium">Grafik WHO Otomatis</p>
+                                <p class="text-sm text-warm-brown/60">Interpretasi berat & tinggi badan sesuai usia</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-6 h-6 bg-mint-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i class="bi bi-check text-mint-500"></i>
+                            </span>
+                            <div>
+                                <p class="font-medium">Pengingat Imunisasi</p>
+                                <p class="text-sm text-warm-brown/60">Jadwal vaksinasi sesuai program IDAI/Kemenkes</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-6 h-6 bg-mint-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i class="bi bi-check text-mint-500"></i>
+                            </span>
+                            <div>
+                                <p class="font-medium">Milestone Tracker</p>
+                                <p class="text-sm text-warm-brown/60">Pantau perkembangan motorik, bahasa, sosial</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Pillar 2: Memories & Time Capsule -->
+                <div class="bg-white rounded-3xl p-8 shadow-xl border border-peach-100 hover:shadow-2xl transition-shadow">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-16 h-16 bg-gradient-to-br from-blush-200 to-blush-300 rounded-2xl flex items-center justify-center">
+                            <i class="bi bi-heart text-3xl text-blush-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-heading text-xl font-bold">Kenangan & Kapsul Waktu</h3>
+                            <p class="text-warm-brown/60">Abadikan Momen Berharga</p>
+                        </div>
+                    </div>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="w-6 h-6 bg-blush-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i class="bi bi-check text-blush-500"></i>
+                            </span>
+                            <div>
+                                <p class="font-medium">Surat untuk Masa Depan</p>
+                                <p class="text-sm text-warm-brown/60">Tulis pesan yang dibuka saat anak dewasa</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-6 h-6 bg-blush-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i class="bi bi-check text-blush-500"></i>
+                            </span>
+                            <div>
+                                <p class="font-medium">Simpan Foto Kenangan</p>
+                                <p class="text-sm text-warm-brown/60">Upload foto dengan aman dan terorganisir</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-6 h-6 bg-blush-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i class="bi bi-check text-blush-500"></i>
+                            </span>
+                            <div>
+                                <p class="font-medium">Countdown Timer</p>
+                                <p class="text-sm text-warm-brown/60">Hitung mundur hingga waktu pembukaan kapsul</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============== TIME CAPSULE HIGHLIGHT (USP) ============== -->
+    <section id="kapsul-waktu" class="py-20 bg-gradient-to-br from-lavender-100 via-peach-100 to-blush-100 relative overflow-hidden">
+        <!-- Decorative -->
+        <div class="absolute top-10 left-10 text-6xl opacity-10">💌</div>
+        <div class="absolute bottom-10 right-10 text-6xl opacity-10">⏰</div>
+        
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <!-- Visual - Sealed Envelope -->
+                <div class="relative order-2 lg:order-1">
+                    <div class="relative mx-auto w-full max-w-md envelope-animation">
+                        <!-- Envelope Card -->
+                        <div class="bg-white rounded-3xl shadow-2xl p-8 border-2 border-blush-200 relative overflow-hidden">
+                            <!-- Seal -->
+                            <div class="absolute top-4 right-4">
+                                <div class="relative">
+                                    <div class="w-16 h-16 bg-gradient-to-br from-blush-300 to-blush-400 rounded-full flex items-center justify-center shadow-lg">
+                                        <i class="bi bi-lock-fill text-white text-2xl"></i>
+                                    </div>
+                                    <div class="absolute inset-0 w-16 h-16 bg-blush-300 rounded-full pulse-ring"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Content -->
+                            <div class="mb-8">
+                                <p class="text-sm text-warm-brown/60 mb-2">Kapsul Waktu untuk</p>
+                                <h3 class="font-heading text-2xl font-bold gradient-text">Anisa Putri</h3>
+                            </div>
+                            
+                            <!-- Countdown -->
+                            <div class="bg-peach-50 rounded-2xl p-6">
+                                <p class="text-sm text-warm-brown/60 mb-3 text-center">Akan terbuka dalam:</p>
+                                <div class="grid grid-cols-4 gap-2 text-center">
+                                    <div>
+                                        <div class="bg-white rounded-xl p-3 shadow-sm mb-1">
+                                            <span class="font-heading text-2xl font-bold text-blush-400">15</span>
+                                        </div>
+                                        <span class="text-xs text-warm-brown/60">Tahun</span>
+                                    </div>
+                                    <div>
+                                        <div class="bg-white rounded-xl p-3 shadow-sm mb-1">
+                                            <span class="font-heading text-2xl font-bold text-lavender-400">2</span>
+                                        </div>
+                                        <span class="text-xs text-warm-brown/60">Bulan</span>
+                                    </div>
+                                    <div>
+                                        <div class="bg-white rounded-xl p-3 shadow-sm mb-1">
+                                            <span class="font-heading text-2xl font-bold text-mint-400">18</span>
+                                        </div>
+                                        <span class="text-xs text-warm-brown/60">Hari</span>
+                                    </div>
+                                    <div>
+                                        <div class="bg-white rounded-xl p-3 shadow-sm mb-1">
+                                            <span class="font-heading text-2xl font-bold text-warm-brown">07</span>
+                                        </div>
+                                        <span class="text-xs text-warm-brown/60">Jam</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Message Preview -->
+                            <div class="mt-6 p-4 bg-lavender-50 rounded-xl border-l-4 border-lavender-300">
+                                <p class="text-sm text-warm-brown/80 italic">
+                                    "Sayang, saat kamu membaca ini, kamu sudah beranjak dewasa..."
+                                </p>
+                                <p class="text-xs text-warm-brown/50 mt-2">— Mama & Papa, 2024</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Content -->
+                <div class="order-1 lg:order-2 text-center lg:text-left">
+                    <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-white/80 text-blush-500 rounded-full text-sm font-medium mb-4">
+                        💝 Fitur Unggulan
+                    </span>
+                    <h2 class="font-heading text-3xl sm:text-4xl font-bold mb-6 leading-tight">
+                        Hadiah Terindah untuk
+                        <span class="gradient-text">17 Tahun Mendatang</span>
+                    </h2>
+                    <p class="text-lg text-warm-brown/70 mb-6 leading-relaxed">
+                        Bayangkan senyum anak Anda saat beranjak dewasa: Membaca seluruh kenangan dan pesan 
+                        yang tersimpan rapi sejak mereka lahir. Kapsul waktu digital yang akan menjadi 
+                        <strong>warisan emosional</strong> paling berharga.
+                    </p>
+                    
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-3 justify-center lg:justify-start">
+                            <span class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm">
+                                <i class="bi bi-envelope-heart text-blush-400"></i>
+                            </span>
+                            <span>Tulis surat penuh kasih sayang</span>
+                        </li>
+                        <li class="flex items-center gap-3 justify-center lg:justify-start">
+                            <span class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm">
+                                <i class="bi bi-camera text-lavender-400"></i>
+                            </span>
+                            <span>Simpan foto momen spesial</span>
+                        </li>
+                        <li class="flex items-center gap-3 justify-center lg:justify-start">
+                            <span class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm">
+                                <i class="bi bi-calendar-heart text-mint-400"></i>
+                            </span>
+                            <span>Pilih tanggal pembukaan khusus</span>
+                        </li>
+                    </ul>
+                    
+                    <a href="{{ url_for('register') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blush-300 to-blush-400 text-white font-bold rounded-full shadow-xl shadow-blush-300/40 hover:shadow-2xl hover:-translate-y-1 transition-all">
+                        <i class="bi bi-gift"></i>
+                        Buat Kapsul Waktu Pertama
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============== SECURITY SECTION ============== -->
+    <section id="keamanan" class="py-20 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-mint-100 text-mint-500 rounded-full text-sm font-medium mb-4">
+                🔒 Keamanan Terjamin
+            </span>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold mb-4">
+                Privasi Buah Hati adalah <span class="gradient-text">Prioritas Kami</span>
+            </h2>
+            <p class="text-lg text-warm-brown/70 mb-12 max-w-2xl mx-auto">
+                Hanya Anda yang bisa mengakses kenangan ini. Data anak Anda dilindungi dengan teknologi keamanan terbaik.
+            </p>
+            
+            <div class="grid sm:grid-cols-3 gap-6">
+                <div class="p-6 bg-gradient-to-br from-peach-50 to-white rounded-2xl border border-peach-200 hover:shadow-lg transition-all group">
+                    <div class="w-16 h-16 bg-gradient-to-br from-lavender-200 to-lavender-300 rounded-2xl flex items-center justify-center text-3xl mb-4 mx-auto group-hover:scale-110 transition-transform">
+                        🔐
+                    </div>
+                    <h3 class="font-heading font-bold text-lg mb-2">Enkripsi End-to-End</h3>
+                    <p class="text-warm-brown/60 text-sm">Semua data dienkripsi saat penyimpanan dan transfer.</p>
+                </div>
+                
+                <div class="p-6 bg-gradient-to-br from-lavender-50 to-white rounded-2xl border border-lavender-200 hover:shadow-lg transition-all group">
+                    <div class="w-16 h-16 bg-gradient-to-br from-blush-200 to-blush-300 rounded-2xl flex items-center justify-center text-3xl mb-4 mx-auto group-hover:scale-110 transition-transform">
+                        🚫
+                    </div>
+                    <h3 class="font-heading font-bold text-lg mb-2">Data Tidak Dijual</h3>
+                    <p class="text-warm-brown/60 text-sm">Kami tidak pernah menjual atau membagikan data Anda ke pihak ketiga.</p>
+                </div>
+                
+                <div class="p-6 bg-gradient-to-br from-mint-50 to-white rounded-2xl border border-mint-200 hover:shadow-lg transition-all group">
+                    <div class="w-16 h-16 bg-gradient-to-br from-mint-200 to-mint-300 rounded-2xl flex items-center justify-center text-3xl mb-4 mx-auto group-hover:scale-110 transition-transform">
+                        ☁️
+                    </div>
+                    <h3 class="font-heading font-bold text-lg mb-2">Backup Cloud Aman</h3>
+                    <p class="text-warm-brown/60 text-sm">Data Anda tersimpan aman dengan backup otomatis.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============== TESTIMONIAL / QUOTE SECTION ============== -->
+    <section class="py-20 bg-gradient-to-br from-peach-100 to-lavender-100">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="bg-white rounded-3xl shadow-xl p-8 sm:p-12 border border-peach-200 relative">
+                <!-- Quote Mark -->
+                <div class="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 bg-gradient-to-br from-blush-300 to-lavender-300 rounded-2xl flex items-center justify-center shadow-lg">
+                    <i class="bi bi-quote text-white text-2xl"></i>
+                </div>
+                
+                <blockquote class="text-xl sm:text-2xl font-heading text-warm-brown leading-relaxed mb-6 mt-4">
+                    "Dokumentasi masa kecil sangat penting untuk perkembangan emosional anak. 
+                    Melihat kembali momen-momen berharga dapat memperkuat ikatan keluarga dan 
+                    <span class="gradient-text font-bold">membangun rasa identitas yang kuat</span> pada anak."
+                </blockquote>
+                
+                <div class="flex items-center justify-center gap-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-lavender-200 to-mint-200 rounded-full flex items-center justify-center text-xl">
+                        👩‍⚕️
+                    </div>
+                    <div class="text-left">
+                        <p class="font-heading font-bold text-warm-brown">Dr. Anita Wijaya, Sp.A</p>
+                        <p class="text-sm text-warm-brown/60">Dokter Spesialis Anak</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============== FINAL CTA SECTION ============== -->
+    <section class="py-20 bg-gradient-to-br from-blush-200 via-lavender-200 to-mint-200 relative overflow-hidden">
+        <!-- Decorative -->
+        <div class="absolute top-0 left-0 w-full h-full">
+            <div class="shape w-48 h-48 bg-white/30 top-10 left-10"></div>
+            <div class="shape w-64 h-64 bg-white/20 bottom-10 right-10"></div>
+        </div>
+        
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <div class="text-6xl mb-6 animate-bounce-slow">🍼</div>
+            <h2 class="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-warm-brown">
+                Mulai Perjalanan Indah Ini<br>
+                <span class="gradient-text">Sekarang Juga</span>
+            </h2>
+            <p class="text-lg text-warm-brown/80 mb-8 max-w-xl mx-auto">
+                Daftar gratis dan mulai dokumentasikan setiap momen berharga si kecil. 
+                Kenangan hari ini adalah harta untuk masa depan.
+            </p>
+            
+            <a href="{{ url_for('register') }}" class="inline-flex items-center gap-3 px-10 py-5 bg-white text-warm-brown font-bold text-lg rounded-full shadow-2xl hover:shadow-3xl hover:-translate-y-2 transition-all group">
+                <i class="bi bi-rocket-takeoff text-blush-400 text-2xl group-hover:animate-bounce"></i>
+                Mulai Sekarang - Gratis
+            </a>
+            
+            <p class="text-sm text-warm-brown/60 mt-6">
+                Sudah punya akun? <a href="{{ url_for('login') }}" class="text-blush-500 hover:underline font-medium">Masuk di sini</a>
+            </p>
+        </div>
+    </section>
+
+    <!-- ============== FOOTER ============== -->
+    <footer class="bg-warm-brown text-white/80 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+                <!-- Brand -->
+                <div class="sm:col-span-2 lg:col-span-1">
+                    <a href="/" class="flex items-center gap-2 mb-4">
+                        <span class="text-3xl">🍼</span>
+                        <span class="font-heading font-bold text-xl text-white">BabyGrow</span>
+                    </a>
+                    <p class="text-sm text-white/60 leading-relaxed">
+                        Kesehatan anak terpantau, kenangan indah terabadikan. 
+                        Dibuat dengan 💕 untuk orang tua Indonesia.
+                    </p>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="font-heading font-bold text-white mb-4">Fitur</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#fitur" class="hover:text-white transition-colors">Growth Tracker</a></li>
+                        <li><a href="#fitur" class="hover:text-white transition-colors">Jadwal Imunisasi</a></li>
+                        <li><a href="#kapsul-waktu" class="hover:text-white transition-colors">Kapsul Waktu</a></li>
+                        <li><a href="#fitur" class="hover:text-white transition-colors">Milestone</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Support -->
+                <div>
+                    <h4 class="font-heading font-bold text-white mb-4">Dukungan</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white transition-colors">Bantuan</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">FAQ</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Kontak Kami</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Legal -->
+                <div>
+                    <h4 class="font-heading font-bold text-white mb-4">Legal</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white transition-colors">Kebijakan Privasi</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Syarat & Ketentuan</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-sm text-white/50">
+                    © 2024 BabyGrow. All rights reserved.
+                </p>
+                <div class="flex items-center gap-4">
+                    <a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors">
+                        <i class="bi bi-instagram"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors">
+                        <i class="bi bi-facebook"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors">
+                        <i class="bi bi-twitter-x"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
     </footer>
+
+    <!-- Smooth Scroll Script -->
+    <script>
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+        
+        // Observe elements with fade-in animation
+        document.querySelectorAll('.animate-fade-in-up').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.8s ease-out, transform 0.8s ease-out';
+            observer.observe(el);
+        });
+    </script>
 </body>
 </html>
