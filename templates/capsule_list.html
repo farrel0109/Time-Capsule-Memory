@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Kapsul Waktu - BabyGrow{% endblock %}
+
+{% block content %}
+<div class="container animate-fadeIn">
+    <!-- Header -->
+    <div class="flex justify-between items-center" style="margin-bottom: var(--space-xl);">
+        <div>
+            <h1 style="margin-bottom: var(--space-xs);">💌 Kapsul Waktu</h1>
+            <p class="text-muted">Simpan pesan cinta untuk si kecil di masa depan</p>
+        </div>
+        <a href="{{ url_for('capsule_create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Buat Kapsul Baru
+        </a>
+    </div>
+    
+    {% if capsules %}
+    <!-- Capsule Grid -->
+    <div class="grid grid-3">
+        {% for cap in capsules %}
+        {% set cap_id = cap.id if cap.id else cap[0] %}
+        {% set cap_title = cap.title if cap.title else cap[2] %}
+        {% set cap_unlock = cap.unlock_date if cap.unlock_date else cap[4] %}
+        {% set cap_occasion = cap.unlock_occasion if cap.unlock_occasion else cap[5] %}
+        {% set cap_sealed = cap.is_sealed if cap.is_sealed else cap[6] %}
+        {% set cap_opened = cap.opened_at if cap.opened_at else cap[8] %}
+        {% set cap_child = cap.child_name if cap.child_name else cap[10] %}
+        
+        <a href="{{ url_for('capsule_view', capsule_id=cap_id) }}" class="card capsule-card stagger-item" style="text-decoration: none;">
+            <!-- Status Badge -->
+            <div style="position: absolute; top: var(--space-md); right: var(--space-md);">
+                {% if cap_opened %}
+                    <span class="badge badge-success">✨ Terbuka</span>
+                {% elif cap_sealed %}
+                    <span class="badge badge-pending">🔒 Tersegel</span>
+                {% else %}
+                    <span class="badge badge-warning">📝 Draft</span>
+                {% endif %}
+            </div>
+            
+            <!-- Capsule Visual -->
+            <div class="capsule-icon" style="font-size: 4rem; text-align: center; margin-bottom: var(--space-md);">
+                {% if cap_opened %}
+                    💌
+                {% elif cap_sealed %}
+                    🔐
+                {% else %}
+                    ✉️
+                {% endif %}
+            </div>
+            
+            <h3 style="text-align: center; margin-bottom: var(--space-xs);">{{ cap_title }}</h3>
+            <p class="text-sm text-muted text-center">Untuk {{ cap_child }}</p>
+            
+            <div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px dashed var(--color-peach);">
+                <div class="flex justify-between text-sm">
+                    <span class="text-muted">Dibuka:</span>
+                    <strong>{{ cap_unlock }}</strong>
+                </div>
+                {% if cap_occasion %}
+                <div class="text-sm text-muted" style="margin-top: var(--space-xs);">
+                    🎉 {{ cap_occasion }}
+                </div>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="card empty-state capsule-card">
+        <div class="empty-state-icon">💌</div>
+        <h3 class="empty-state-title">Belum ada kapsul waktu</h3>
+        <p class="empty-state-text">
+            Buat kapsul waktu pertama Anda! Tulis surat cinta, tambahkan foto kenangan, 
+            dan segel untuk dibuka di masa depan oleh si kecil.
+        </p>
+        <a href="{{ url_for('capsule_create') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-envelope-heart"></i> Buat Kapsul Pertama
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

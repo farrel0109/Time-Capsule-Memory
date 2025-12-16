@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="BabyGrow - Aplikasi monitoring kesehatan dan perkembangan balita dengan fitur kapsul waktu">
+    <title>BabyGrow - Asisten Digital & Kapsul Waktu untuk Si Kecil</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <style>
+        .landing-hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, var(--color-peach) 0%, var(--color-lavender) 50%, var(--color-mint) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .landing-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FFFFFF' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+        
+        .landing-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: var(--space-xl);
+        }
+        
+        .landing-logo {
+            font-size: 4rem;
+            margin-bottom: var(--space-md);
+            animation: bounce 2s ease infinite;
+        }
+        
+        .landing-title {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            margin-bottom: var(--space-md);
+        }
+        
+        .landing-title span {
+            background: linear-gradient(135deg, var(--color-blush-dark), var(--color-lavender-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .landing-subtitle {
+            font-size: 1.25rem;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-xl);
+            line-height: 1.8;
+        }
+        
+        .landing-buttons {
+            display: flex;
+            gap: var(--space-md);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .landing-features {
+            padding: var(--space-2xl) 0;
+            background: var(--color-cloud);
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-lg);
+            margin-top: var(--space-xl);
+        }
+        
+        .feature-card {
+            text-align: center;
+            padding: var(--space-xl);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: var(--space-md);
+        }
+        
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: var(--space-sm);
+        }
+        
+        .feature-text {
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+        }
+        
+        @media (max-width: 768px) {
+            .landing-title {
+                font-size: 2rem;
+            }
+            
+            .landing-subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="landing-hero">
+        <div class="landing-content animate-fadeIn">
+            <div class="landing-logo">🍼</div>
+            <h1 class="landing-title">
+                <span>BabyGrow</span>
+            </h1>
+            <p class="landing-subtitle">
+                Asisten digital untuk memantau kesehatan dan perkembangan si kecil, 
+                sekaligus menyimpan kenangan indah dalam <strong>Kapsul Waktu</strong> 
+                untuk dibuka di masa depan. 💕
+            </p>
+            <div class="landing-buttons">
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-person-plus"></i> Daftar Gratis
+                </a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-lg">
+                    <i class="bi bi-box-arrow-in-right"></i> Masuk
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section class="landing-features">
+        <div class="container">
+            <h2 class="text-center" style="font-size: 2rem;">Fitur Utama</h2>
+            <p class="text-center text-muted">Semua yang Anda butuhkan untuk memantau tumbuh kembang si kecil</p>
+            
+            <div class="feature-grid">
+                <div class="card feature-card stagger-item">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Pantau Pertumbuhan</h3>
+                    <p class="feature-text">
+                        Catat berat, tinggi, dan lingkar kepala. Lihat grafik perkembangan dengan standar WHO.
+                    </p>
+                </div>
+                
+                <div class="card feature-card stagger-item">
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="feature-title">Milestone Tracker</h3>
+                    <p class="feature-text">
+                        Pantau pencapaian perkembangan motorik, bahasa, sosial, dan kognitif si kecil.
+                    </p>
+                </div>
+                
+                <div class="card feature-card stagger-item">
+                    <div class="feature-icon">💉</div>
+                    <h3 class="feature-title">Jadwal Imunisasi</h3>
+                    <p class="feature-text">
+                        Catat dan dapatkan pengingat jadwal vaksinasi sesuai program imunisasi nasional.
+                    </p>
+                </div>
+                
+                <div class="card feature-card stagger-item">
+                    <div class="feature-icon">💌</div>
+                    <h3 class="feature-title">Kapsul Waktu</h3>
+                    <p class="feature-text">
+                        Tulis surat, simpan foto & rekaman suara untuk dibuka si kecil saat dewasa nanti.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section style="background: linear-gradient(135deg, var(--color-lavender), var(--color-blush)); padding: var(--space-2xl) 0; text-align: center;">
+        <div class="container">
+            <h2 style="color: var(--color-text-primary); margin-bottom: var(--space-md);">
+                Mulai Dokumentasikan Perjalanan Si Kecil
+            </h2>
+            <p style="color: var(--color-text-secondary); margin-bottom: var(--space-lg); max-width: 500px; margin-left: auto; margin-right: auto;">
+                Daftar sekarang dan buat kenangan yang akan bertahan selamanya.
+            </p>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-rocket-takeoff"></i> Mulai Sekarang
+            </a>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer style="background: var(--color-cloud); padding: var(--space-lg) 0; text-align: center;">
+        <p class="text-muted text-sm" style="margin: 0;">
+            🍼 BabyGrow — Dibuat dengan 💕 untuk si kecil
+        </p>
+    </footer>
+</body>
+</html>

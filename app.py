@@ -32,7 +32,7 @@ def index():
         SELECT c.id, c.name, g.weight, g.height, g.record_date 
         FROM children c 
         LEFT JOIN growth g ON c.id = g.child_id 
-        WHERE g.user_id = ? 
+        WHERE c.user_id = ? 
         ORDER BY g.record_date DESC LIMIT 5
     ''', (user_id,))
     latest_growth = cur.fetchall()
@@ -115,7 +115,7 @@ def children():
     user_id = session.get('user_id')
     if not user_id:
         return redirect(url_for('login'))
-    cur = db.execute('SELECT id,name,dob FROM children WHERE user_id=?', (user_id,))
+    cur = db.execute('SELECT id,name,dob,gender FROM children WHERE user_id=?', (user_id,))
     children = cur.fetchall()
     return render_template('children.html', children=children)
 
@@ -391,5 +391,377 @@ def toggle_immunization(child_id, vacc_id):
     
     return redirect(url_for('immunization_list', child_id=child_id))
 
+# ==================== TIME CAPSULE ROUTES ====================
+
+@app.route('/capsule')
+def capsule_list():
+    """List all time capsules for the user."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    # Get all capsules with child info
+    cur = db.execute('''
+        SELECT tc.*, c.name as child_name 
+        FROM time_capsules tc
+        JOIN children c ON tc.child_id = c.id
+        WHERE c.user_id = ?
+        ORDER BY tc.created_at DESC
+    ''', (user_id,))
+    capsules = cur.fetchall()
+    
+    return render_template('capsule_list.html', capsules=capsules)
+
+
+@app.route('/capsule/new', methods=['GET', 'POST'])
+def capsule_create():
+    """Create a new time capsule."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    # Get user's children
+    cur = db.execute('SELECT id, name FROM children WHERE user_id=?', (user_id,))
+    children_list = cur.fetchall()
+    
+    if not children_list:
+        flash('Tambahkan anak terlebih dahulu sebelum membuat kapsul waktu.')
+        return redirect(url_for('add_child'))
+    
+    if request.method == 'POST':
+        child_id = request.form['child_id']
+        title = request.form['title']
+        letter_content = request.form['letter_content']
+        unlock_date = request.form['unlock_date']
+        unlock_occasion = request.form.get('unlock_occasion', '')
+        
+        db.execute('''
+            INSERT INTO time_capsules (child_id, title, letter_content, unlock_date, unlock_occasion)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (child_id, title, letter_content, unlock_date, unlock_occasion))
+        db.commit()
+        
+        flash('Kapsul waktu berhasil dibuat! 💌')
+        return redirect(url_for('capsule_list'))
+    
+    return render_template('capsule_create.html', children=children_list)
+
+
+@app.route('/capsule/<int:capsule_id>')
+def capsule_view(capsule_id):
+    """View a time capsule."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    # Get capsule with ownership check
+    cur = db.execute('''
+        SELECT tc.*, c.name as child_name 
+        FROM time_capsules tc
+        JOIN children c ON tc.child_id = c.id
+        WHERE tc.id = ? AND c.user_id = ?
+    ''', (capsule_id, user_id))
+    capsule = cur.fetchone()
+    
+    if not capsule:
+        flash('Kapsul tidak ditemukan.')
+        return redirect(url_for('capsule_list'))
+    
+    # Get media attachments
+    cur = db.execute('SELECT * FROM capsule_media WHERE capsule_id = ?', (capsule_id,))
+    media = cur.fetchall()
+    
+    # Check if sealed and not yet unlockable
+    from datetime import datetime
+    is_sealed = capsule['is_sealed'] if isinstance(capsule, dict) else capsule[7]
+    unlock_date_str = capsule['unlock_date'] if isinstance(capsule, dict) else capsule[4]
+    
+    if is_sealed:
+        unlock_date = datetime.strptime(unlock_date_str, '%Y-%m-%d')
+        can_open = datetime.now() >= unlock_date
+        return render_template('capsule_sealed.html', capsule=capsule, media=media, can_open=can_open)
+    
+    return render_template('capsule_edit.html', capsule=capsule, media=media)
+
+
+@app.route('/capsule/<int:capsule_id>/edit', methods=['POST'])
+def capsule_update(capsule_id):
+    """Update capsule content (before sealing)."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    # Verify ownership and not sealed
+    cur = db.execute('''
+        SELECT tc.is_sealed FROM time_capsules tc
+        JOIN children c ON tc.child_id = c.id
+        WHERE tc.id = ? AND c.user_id = ?
+    ''', (capsule_id, user_id))
+    capsule = cur.fetchone()
+    
+    if not capsule:
+        flash('Kapsul tidak ditemukan.')
+        return redirect(url_for('capsule_list'))
+    
+    is_sealed = capsule['is_sealed'] if isinstance(capsule, dict) else capsule[0]
+    if is_sealed:
+        flash('Kapsul sudah disegel, tidak bisa diedit.')
+        return redirect(url_for('capsule_view', capsule_id=capsule_id))
+    
+    title = request.form['title']
+    letter_content = request.form['letter_content']
+    unlock_date = request.form['unlock_date']
+    unlock_occasion = request.form.get('unlock_occasion', '')
+    
+    db.execute('''
+        UPDATE time_capsules 
+        SET title=?, letter_content=?, unlock_date=?, unlock_occasion=?
+        WHERE id=?
+    ''', (title, letter_content, unlock_date, unlock_occasion, capsule_id))
+    db.commit()
+    
+    flash('Kapsul berhasil diperbarui.')
+    return redirect(url_for('capsule_view', capsule_id=capsule_id))
+
+
+@app.route('/capsule/<int:capsule_id>/seal', methods=['POST'])
+def capsule_seal(capsule_id):
+    """Seal the capsule - no more edits allowed."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    # Verify ownership
+    cur = db.execute('''
+        SELECT tc.id FROM time_capsules tc
+        JOIN children c ON tc.child_id = c.id
+        WHERE tc.id = ? AND c.user_id = ? AND tc.is_sealed = 0
+    ''', (capsule_id, user_id))
+    capsule = cur.fetchone()
+    
+    if not capsule:
+        flash('Kapsul tidak ditemukan atau sudah disegel.')
+        return redirect(url_for('capsule_list'))
+    
+    from datetime import datetime
+    db.execute('''
+        UPDATE time_capsules SET is_sealed = 1, sealed_at = ? WHERE id = ?
+    ''', (datetime.now().isoformat(), capsule_id))
+    db.commit()
+    
+    flash('🔒 Kapsul waktu berhasil disegel! Akan terbuka pada tanggal yang ditentukan.')
+    return redirect(url_for('capsule_view', capsule_id=capsule_id))
+
+
+@app.route('/capsule/<int:capsule_id>/open', methods=['POST'])
+def capsule_open(capsule_id):
+    """Open the capsule if unlock date has passed."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    # Verify ownership and unlock date
+    cur = db.execute('''
+        SELECT tc.* FROM time_capsules tc
+        JOIN children c ON tc.child_id = c.id
+        WHERE tc.id = ? AND c.user_id = ? AND tc.is_sealed = 1
+    ''', (capsule_id, user_id))
+    capsule = cur.fetchone()
+    
+    if not capsule:
+        flash('Kapsul tidak ditemukan.')
+        return redirect(url_for('capsule_list'))
+    
+    from datetime import datetime
+    unlock_date_str = capsule['unlock_date'] if isinstance(capsule, dict) else capsule[4]
+    unlock_date = datetime.strptime(unlock_date_str, '%Y-%m-%d')
+    
+    if datetime.now() < unlock_date:
+        flash('Belum waktunya membuka kapsul ini! 🔒')
+        return redirect(url_for('capsule_view', capsule_id=capsule_id))
+    
+    db.execute('''
+        UPDATE time_capsules SET opened_at = ? WHERE id = ?
+    ''', (datetime.now().isoformat(), capsule_id))
+    db.commit()
+    
+    return redirect(url_for('capsule_opened', capsule_id=capsule_id))
+
+
+@app.route('/capsule/<int:capsule_id>/opened')
+def capsule_opened(capsule_id):
+    """View opened capsule content with celebration."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    cur = db.execute('''
+        SELECT tc.*, c.name as child_name 
+        FROM time_capsules tc
+        JOIN children c ON tc.child_id = c.id
+        WHERE tc.id = ? AND c.user_id = ? AND tc.opened_at IS NOT NULL
+    ''', (capsule_id, user_id))
+    capsule = cur.fetchone()
+    
+    if not capsule:
+        flash('Kapsul tidak ditemukan atau belum dibuka.')
+        return redirect(url_for('capsule_list'))
+    
+    cur = db.execute('SELECT * FROM capsule_media WHERE capsule_id = ?', (capsule_id,))
+    media = cur.fetchall()
+    
+    return render_template('capsule_opened.html', capsule=capsule, media=media)
+
+
+@app.route('/capsule/<int:capsule_id>/delete', methods=['POST'])
+def capsule_delete(capsule_id):
+    """Delete a capsule (only if not sealed)."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    # Verify ownership and not sealed
+    cur = db.execute('''
+        SELECT tc.is_sealed FROM time_capsules tc
+        JOIN children c ON tc.child_id = c.id
+        WHERE tc.id = ? AND c.user_id = ?
+    ''', (capsule_id, user_id))
+    capsule = cur.fetchone()
+    
+    if not capsule:
+        flash('Kapsul tidak ditemukan.')
+        return redirect(url_for('capsule_list'))
+    
+    is_sealed = capsule['is_sealed'] if isinstance(capsule, dict) else capsule[0]
+    if is_sealed:
+        flash('Kapsul yang sudah disegel tidak bisa dihapus.')
+        return redirect(url_for('capsule_list'))
+    
+    # Delete media first, then capsule
+    db.execute('DELETE FROM capsule_media WHERE capsule_id = ?', (capsule_id,))
+    db.execute('DELETE FROM time_capsules WHERE id = ?', (capsule_id,))
+    db.commit()
+    
+    flash('Kapsul berhasil dihapus.')
+    return redirect(url_for('capsule_list'))
+
+
+@app.route('/capsule/<int:capsule_id>/upload', methods=['POST'])
+def capsule_upload_media(capsule_id):
+    """Upload media (photo) to a capsule."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    # Verify ownership and not sealed
+    cur = db.execute('''
+        SELECT tc.is_sealed FROM time_capsules tc
+        JOIN children c ON tc.child_id = c.id
+        WHERE tc.id = ? AND c.user_id = ?
+    ''', (capsule_id, user_id))
+    capsule = cur.fetchone()
+    
+    if not capsule:
+        flash('Kapsul tidak ditemukan.')
+        return redirect(url_for('capsule_list'))
+    
+    is_sealed = capsule['is_sealed'] if isinstance(capsule, dict) else capsule[0]
+    if is_sealed:
+        flash('Kapsul sudah disegel, tidak bisa menambah media.')
+        return redirect(url_for('capsule_view', capsule_id=capsule_id))
+    
+    if 'photo' not in request.files:
+        flash('Tidak ada file yang dipilih.')
+        return redirect(url_for('capsule_view', capsule_id=capsule_id))
+    
+    file = request.files['photo']
+    if file.filename == '':
+        flash('Tidak ada file yang dipilih.')
+        return redirect(url_for('capsule_view', capsule_id=capsule_id))
+    
+    if file:
+        import os
+        from werkzeug.utils import secure_filename
+        from datetime import datetime
+        
+        # Create upload folder
+        upload_folder = os.path.join(os.path.dirname(__file__), 'static', 'uploads', 'capsules')
+        os.makedirs(upload_folder, exist_ok=True)
+        
+        # Generate unique filename
+        filename = secure_filename(file.filename)
+        ext = filename.rsplit('.', 1)[-1] if '.' in filename else 'jpg'
+        unique_filename = f"capsule_{capsule_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}.{ext}"
+        filepath = os.path.join(upload_folder, unique_filename)
+        
+        # Save file
+        file.save(filepath)
+        
+        # Save to database
+        file_url = f"/static/uploads/capsules/{unique_filename}"
+        caption = request.form.get('caption', '')
+        
+        db.execute('''
+            INSERT INTO capsule_media (capsule_id, media_type, file_url, caption)
+            VALUES (?, 'photo', ?, ?)
+        ''', (capsule_id, file_url, caption))
+        db.commit()
+        
+        flash('📸 Foto berhasil ditambahkan!')
+    
+    return redirect(url_for('capsule_view', capsule_id=capsule_id))
+
+
+# ==================== SETTINGS ROUTES ====================
+
+@app.route('/settings', methods=['GET', 'POST'])
+def settings():
+    """User settings page."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    # Get current user data
+    cur = db.execute('SELECT username FROM users WHERE id=?', (user_id,))
+    user = cur.fetchone()
+    
+    # Get stats
+    cur = db.execute('SELECT COUNT(*) FROM children WHERE user_id=?', (user_id,))
+    total_children = cur.fetchone()[0]
+    
+    cur = db.execute('''
+        SELECT COUNT(*) FROM time_capsules tc
+        JOIN children c ON tc.child_id = c.id
+        WHERE c.user_id = ?
+    ''', (user_id,))
+    total_capsules = cur.fetchone()[0]
+    
+    if request.method == 'POST':
+        # Handle theme change
+        theme = request.form.get('theme', 'peach')
+        session['theme'] = theme
+        flash('Pengaturan berhasil disimpan! ✨')
+        return redirect(url_for('settings'))
+    
+    current_theme = session.get('theme', 'peach')
+    
+    return render_template('settings.html', 
+                          user=user,
+                          total_children=total_children,
+                          total_capsules=total_capsules,
+                          current_theme=current_theme)
+
+
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1', port=5001)
+

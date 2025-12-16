@@ -1,17 +1,17 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Daftar - BabyGrow{% endblock %}
+{% block title %}Masuk - BabyGrow{% endblock %}
 
 {% block content %}
 <div style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: var(--space-lg);">
     <div class="card animate-slideUp" style="width: 100%; max-width: 400px;">
         <div class="text-center" style="margin-bottom: var(--space-xl);">
             <div style="font-size: 3rem; margin-bottom: var(--space-sm);">🍼</div>
-            <h1 style="font-size: 1.5rem; margin-bottom: var(--space-xs);">Buat Akun Baru</h1>
-            <p class="text-muted">Mulai dokumentasikan perjalanan si kecil</p>
+            <h1 style="font-size: 1.5rem; margin-bottom: var(--space-xs);">Selamat Datang!</h1>
+            <p class="text-muted">Masuk ke akun BabyGrow Anda</p>
         </div>
         
-        <form method="POST">
+        <form method="POST" action="{{ url_for('auth.login') }}">
             <div class="form-group">
                 <label class="form-label" for="username">
                     <i class="bi bi-person"></i> Username
@@ -20,7 +20,7 @@
                        id="username" 
                        name="username" 
                        class="form-input" 
-                       placeholder="Pilih username unik"
+                       placeholder="Masukkan username"
                        required>
             </div>
             
@@ -32,19 +32,19 @@
                        id="password" 
                        name="password" 
                        class="form-input" 
-                       placeholder="Minimal 6 karakter"
+                       placeholder="Masukkan password"
                        required>
             </div>
             
             <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: var(--space-md);">
-                <i class="bi bi-person-plus"></i> Daftar Sekarang
+                <i class="bi bi-box-arrow-in-right"></i> Masuk
             </button>
         </form>
         
         <div class="text-center" style="margin-top: var(--space-lg);">
             <p class="text-muted">
-                Sudah punya akun? 
-                <a href="{{ url_for('login') }}">Masuk di sini</a>
+                Belum punya akun? 
+                <a href="{{ url_for('auth.register') }}">Daftar sekarang</a>
             </p>
         </div>
     </div>

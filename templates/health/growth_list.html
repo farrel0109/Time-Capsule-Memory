@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Pertumbuhan {{ child.name if child.name else child[1] }} - BabyGrow{% endblock %}
+
+{% block content %}
+<div class="container animate-fadeIn">
+    {% set child_id = child.id if child.id else child[0] %}
+    {% set child_name = child.name if child.name else child[1] %}
+    
+    <!-- Header -->
+    <div class="flex justify-between items-center" style="margin-bottom: var(--space-xl);">
+        <div>
+            <a href="{{ url_for('children.view_child', child_id=child_id) }}" class="text-muted" style="display: inline-flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-sm);">
+                <i class="bi bi-arrow-left"></i> Kembali ke {{ child_name }}
+            </a>
+            <h1 style="margin-bottom: 0;">📊 Data Pertumbuhan</h1>
+        </div>
+        <a href="{{ url_for('health.add_growth', child_id=child_id) }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Tambah Data
+        </a>
+    </div>
+    
+    {% if records %}
+    <!-- Growth Chart -->
+    <div class="card" style="margin-bottom: var(--space-xl);">
+        <h3><i class="bi bi-graph-up"></i> Grafik Pertumbuhan</h3>
+        <canvas id="growthChart" style="max-height: 400px;"></canvas>
+    </div>
+    
+    <!-- Records Table -->
+    <div class="card">
+        <h3><i class="bi bi-list-ul"></i> Riwayat Pemeriksaan</h3>
+        <div class="table-wrapper" style="margin-top: var(--space-md);">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Berat (kg)</th>
+                        <th>Tinggi (cm)</th>
+                        <th>Lingkar Kepala (cm)</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ record.record_date if record.record_date else record[1] }}</td>
+                        <td>
+                            <span class="badge badge-success">
+                                {{ record.weight if record.weight else record[2] }} kg
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-pending">
+                                {{ record.height if record.height else record[3] }} cm
+                            </span>
+                        </td>
+                        <td>{{ (record.head_circ if record.head_circ else record[4]) or '-' }}</td>
+                        <td>
+                            <form method="POST" 
+                                  action="{{ url_for('health.delete_growth', child_id=child_id, record_id=record.id if record.id else record[0]) }}"
+                                  onsubmit="return confirm('Hapus data ini?');">
+                                <button type="submit" class="btn btn-ghost btn-sm" style="color: var(--color-error);">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="card empty-state">
+        <div class="empty-state-icon">📊</div>
+        <h3 class="empty-state-title">Belum ada data pertumbuhan</h3>
+        <p class="empty-state-text">Mulai catat berat dan tinggi badan {{ child_name }} untuk melihat perkembangannya.</p>
+        <a href="{{ url_for('health.add_growth', child_id=child_id) }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Tambah Data Pertama
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if records %}
+<script>
+const ctx = document.getElementById('growthChart').getContext('2d');
+const chartData = {{ chart_data | tojson }};
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: chartData.labels,
+        datasets: [
+            {
+                label: 'Berat (kg)',
+                data: chartData.weight,
+                borderColor: '#FCB9B2',
+                backgroundColor: 'rgba(252, 185, 178, 0.2)',
+                tension: 0.4,
+                fill: true
+            },
+            {
+                label: 'Tinggi (cm)',
+                data: chartData.height,
+                borderColor: '#B5EAD7',
+                backgroundColor: 'rgba(181, 234, 215, 0.2)',
+                tension: 0.4,
+                fill: true
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: false,
+                grid: {
+                    color: 'rgba(93, 78, 55, 0.05)'
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

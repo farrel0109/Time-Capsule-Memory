@@ -1,20 +1,20 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block title %}Daftar - BabyGrow{% endblock %}
 
 {% block content %}
 <div style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: var(--space-lg);">
-    <div class="card animate-slideUp" style="width: 100%; max-width: 400px;">
+    <div class="card animate-slideUp" style="width: 100%; max-width: 450px;">
         <div class="text-center" style="margin-bottom: var(--space-xl);">
             <div style="font-size: 3rem; margin-bottom: var(--space-sm);">🍼</div>
             <h1 style="font-size: 1.5rem; margin-bottom: var(--space-xs);">Buat Akun Baru</h1>
             <p class="text-muted">Mulai dokumentasikan perjalanan si kecil</p>
         </div>
         
-        <form method="POST">
+        <form method="POST" action="{{ url_for('auth.register') }}">
             <div class="form-group">
                 <label class="form-label" for="username">
-                    <i class="bi bi-person"></i> Username
+                    <i class="bi bi-person"></i> Username *
                 </label>
                 <input type="text" 
                        id="username" 
@@ -25,14 +25,38 @@
             </div>
             
             <div class="form-group">
+                <label class="form-label" for="email">
+                    <i class="bi bi-envelope"></i> Email (opsional)
+                </label>
+                <input type="email" 
+                       id="email" 
+                       name="email" 
+                       class="form-input" 
+                       placeholder="email@contoh.com">
+                <p class="form-help">Untuk pengingat jadwal imunisasi</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="full_name">
+                    <i class="bi bi-person-badge"></i> Nama Lengkap (opsional)
+                </label>
+                <input type="text" 
+                       id="full_name" 
+                       name="full_name" 
+                       class="form-input" 
+                       placeholder="Nama Anda">
+            </div>
+            
+            <div class="form-group">
                 <label class="form-label" for="password">
-                    <i class="bi bi-lock"></i> Password
+                    <i class="bi bi-lock"></i> Password *
                 </label>
                 <input type="password" 
                        id="password" 
                        name="password" 
                        class="form-input" 
                        placeholder="Minimal 6 karakter"
+                       minlength="6"
                        required>
             </div>
             
@@ -44,7 +68,7 @@
         <div class="text-center" style="margin-top: var(--space-lg);">
             <p class="text-muted">
                 Sudah punya akun? 
-                <a href="{{ url_for('login') }}">Masuk di sini</a>
+                <a href="{{ url_for('auth.login') }}">Masuk di sini</a>
             </p>
         </div>
     </div>

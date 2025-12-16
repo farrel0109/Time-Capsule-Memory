@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Milestone {{ child.name if child.name else child[1] }} - BabyGrow{% endblock %}
+
+{% block content %}
+<div class="container animate-fadeIn">
+    {% set child_id = child.id if child.id else child[0] %}
+    {% set child_name = child.name if child.name else child[1] %}
+    
+    <!-- Header -->
+    <div class="flex justify-between items-center" style="margin-bottom: var(--space-xl);">
+        <div>
+            <a href="{{ url_for('children') }}" class="text-muted" style="display: inline-flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-sm);">
+                <i class="bi bi-arrow-left"></i> Kembali ke Daftar
+            </a>
+            <h1 style="margin-bottom: 0;">🎯 Milestone {{ child_name }}</h1>
+        </div>
+        <a href="{{ url_for('add_milestone', child_id=child_id) }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Tambah Milestone
+        </a>
+    </div>
+    
+    {% if milestones %}
+    <!-- Progress Card -->
+    <div class="card" style="margin-bottom: var(--space-xl); background: linear-gradient(135deg, var(--color-mint) 0%, var(--color-cloud) 100%);">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 style="margin: 0;">Progress Keseluruhan</h3>
+                {% set total = milestones|length %}
+                {% set done = milestones|selectattr('status', 'equalto', 'done')|list|length if milestones[0].status is defined else 0 %}
+                {% set progress = ((done / total * 100) if total > 0 else 0)|int %}
+                <p class="text-muted">{{ progress }}% milestone tercapai</p>
+            </div>
+            <div class="progress-circle">
+                <svg width="80" height="80" viewBox="0 0 80 80">
+                    <circle class="progress-circle-bg" cx="40" cy="40" r="36"></circle>
+                    <circle class="progress-circle-fill" cx="40" cy="40" r="36"
+                            stroke-dasharray="{{ (progress * 226) / 100 }} 226"></circle>
+                </svg>
+                <div class="progress-circle-text">{{ progress }}%</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Milestones List -->
+    <div class="card">
+        <h3><i class="bi bi-list-check"></i> Semua Milestone</h3>
+        <ul style="list-style: none; padding: 0; margin: var(--space-md) 0 0 0;">
+            {% for m in milestones %}
+            {% set m_id = m.id if m.id else m[0] %}
+            {% set m_milestone = m.milestone if m.milestone else m[2] %}
+            {% set m_status = m.status if m.status else m[3] %}
+            <li class="flex items-center justify-between" style="padding: var(--space-md) 0; border-bottom: 1px solid var(--color-peach);">
+                <div class="flex items-center gap-md">
+                    <form method="POST" action="{{ url_for('toggle_milestone', child_id=child_id, milestone_id=m_id) }}">
+                        <button type="submit" class="btn btn-icon {{ 'btn-success' if m_status == 'done' else 'btn-outline' }}">
+                            {% if m_status == 'done' %}
+                                <i class="bi bi-check-lg"></i>
+                            {% else %}
+                                <i class="bi bi-circle"></i>
+                            {% endif %}
+                        </button>
+                    </form>
+                    <div>
+                        <strong style="{{ 'text-decoration: line-through; opacity: 0.6;' if m_status == 'done' }}">{{ m_milestone }}</strong>
+                    </div>
+                </div>
+                {% if m_status == 'done' %}
+                <span class="badge badge-success">✓ Tercapai</span>
+                {% else %}
+                <span class="badge badge-pending">Belum</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="card empty-state">
+        <div class="empty-state-icon">🎯</div>
+        <h3 class="empty-state-title">Belum ada milestone</h3>
+        <p class="empty-state-text">Catat pencapaian perkembangan {{ child_name }}</p>
+        <a href="{{ url_for('add_milestone', child_id=child_id) }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Tambah Milestone Pertama
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

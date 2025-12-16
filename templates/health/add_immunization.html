@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block title %}Tambah Vaksinasi - BabyGrow{% endblock %}
 
@@ -8,7 +8,7 @@
         {% set child_id = child.id if child.id else child[0] %}
         {% set child_name = child.name if child.name else child[1] %}
         
-        <a href="{{ url_for('immunization_list', child_id=child_id) }}" class="text-muted" style="display: inline-flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-md);">
+        <a href="{{ url_for('health.immunization_list', child_id=child_id) }}" class="text-muted" style="display: inline-flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-md);">
             <i class="bi bi-arrow-left"></i> Kembali
         </a>
         <h1>💉 Tambah Vaksinasi</h1>
@@ -20,25 +20,22 @@
                     <label class="form-label">Nama Vaksin *</label>
                     <select name="vaccine" class="form-select" required>
                         <option value="">-- Pilih Vaksin --</option>
-                        <option value="Hepatitis B (HB-0)">Hepatitis B (HB-0)</option>
-                        <option value="BCG">BCG</option>
-                        <option value="Polio 1 (OPV)">Polio 1 (OPV)</option>
-                        <option value="DPT-HB-Hib 1">DPT-HB-Hib 1</option>
-                        <option value="Polio 2 (OPV)">Polio 2 (OPV)</option>
-                        <option value="DPT-HB-Hib 2">DPT-HB-Hib 2</option>
-                        <option value="Polio 3 (OPV)">Polio 3 (OPV)</option>
-                        <option value="DPT-HB-Hib 3">DPT-HB-Hib 3</option>
-                        <option value="Polio 4 (IPV)">Polio 4 (IPV)</option>
-                        <option value="Campak/MR 1">Campak/MR 1</option>
-                        <option value="DPT-HB-Hib Lanjutan">DPT-HB-Hib Lanjutan</option>
-                        <option value="Campak/MR Lanjutan">Campak/MR Lanjutan</option>
+                        {% for v in vaccines %}
+                        <option value="{{ v }}">{{ v }}</option>
+                        {% endfor %}
                         <option value="Lainnya">Lainnya</option>
                     </select>
                 </div>
                 
-                <div class="form-group">
-                    <label class="form-label">Tanggal Diberikan</label>
-                    <input type="date" name="date_given" class="form-input">
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Tanggal Terjadwal</label>
+                        <input type="date" name="scheduled_date" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tanggal Diberikan</label>
+                        <input type="date" name="date_given" class="form-input">
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -55,6 +52,16 @@
                             <div>Selesai</div>
                         </label>
                     </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Lokasi Vaksinasi</label>
+                    <input type="text" name="location" class="form-input" placeholder="misal: Puskesmas, RS, dll">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Catatan</label>
+                    <textarea name="notes" class="form-textarea" rows="2" placeholder="Catatan tambahan..."></textarea>
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">

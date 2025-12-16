@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}✨ Kapsul Terbuka! - BabyGrow{% endblock %}
+
+{% block content %}
+<div class="container animate-fadeIn">
+    <div style="max-width: 700px; margin: 0 auto;">
+        {% set cap_id = capsule.id if capsule.id else capsule[0] %}
+        {% set cap_title = capsule.title if capsule.title else capsule[2] %}
+        {% set cap_content = capsule.letter_content if capsule.letter_content else capsule[3] %}
+        {% set cap_unlock = capsule.unlock_date if capsule.unlock_date else capsule[4] %}
+        {% set cap_occasion = capsule.unlock_occasion if capsule.unlock_occasion else capsule[5] %}
+        {% set cap_child = capsule.child_name if capsule.child_name else capsule[10] %}
+        {% set cap_opened = capsule.opened_at if capsule.opened_at else capsule[8] %}
+        {% set cap_sealed = capsule.sealed_at if capsule.sealed_at else capsule[7] %}
+        
+        <!-- Celebration Header -->
+        <div style="text-align: center; margin-bottom: var(--space-xl);">
+            <div class="confetti-animation" style="font-size: 5rem; margin-bottom: var(--space-md);">
+                🎉✨💌✨🎉
+            </div>
+            <h1 style="font-size: 2rem; margin-bottom: var(--space-sm);">Kapsul Waktu Terbuka!</h1>
+            <p class="text-muted">Pesan cinta dari masa lalu untuk {{ cap_child }}</p>
+        </div>
+        
+        <!-- Letter Card -->
+        <div class="card capsule-card capsule-opened" style="background: linear-gradient(180deg, #FFFEF8 0%, #FFF8E8 100%); position: relative; overflow: hidden;">
+            <!-- Decorative Stamp -->
+            <div style="position: absolute; top: var(--space-md); right: var(--space-md); opacity: 0.3;">
+                <div style="font-size: 4rem; transform: rotate(15deg);">💌</div>
+            </div>
+            
+            <div style="padding: var(--space-lg);">
+                <h2 style="font-family: 'Quicksand', sans-serif; margin-bottom: var(--space-md); color: var(--color-primary);">
+                    {{ cap_title }}
+                </h2>
+                
+                {% if cap_occasion %}
+                <div class="badge badge-success" style="margin-bottom: var(--space-lg);">
+                    🎉 {{ cap_occasion }}
+                </div>
+                {% endif %}
+                
+                <!-- The Letter Content -->
+                <div class="letter-content" style="font-family: 'Quicksand', serif; font-size: 1.1rem; line-height: 2; white-space: pre-wrap; padding: var(--space-lg); background: rgba(255,255,255,0.5); border-radius: var(--radius-md); border-left: 4px solid var(--color-primary);">{{ cap_content or 'Tidak ada pesan.' }}</div>
+                
+                <!-- Signature -->
+                <div style="text-align: right; margin-top: var(--space-xl); font-style: italic; color: var(--color-muted);">
+                    <p>Dengan penuh cinta,</p>
+                    <p style="font-size: 1.2rem;">Mama & Papa 💕</p>
+                </div>
+            </div>
+            
+            <!-- Metadata -->
+            <div style="padding: var(--space-md); background: var(--color-cream); border-top: 1px dashed var(--color-peach);">
+                <div class="flex justify-between text-sm text-muted">
+                    <span>📦 Disegel: {{ cap_sealed[:10] if cap_sealed else '-' }}</span>
+                    <span>📬 Dibuka: {{ cap_opened[:10] if cap_opened else '-' }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Media Attachments -->
+        {% if media %}
+        <div class="card" style="margin-top: var(--space-lg);">
+            <h3>📸 Kenangan yang Disimpan</h3>
+            <div class="grid grid-3" style="margin-top: var(--space-md);">
+                {% for m in media %}
+                <div class="polaroid-card">
+                    <img src="{{ m.file_url if m.file_url else m[3] }}" alt="{{ m.caption if m.caption else '' }}" style="width: 100%; border-radius: var(--radius-sm);">
+                    {% if m.caption or m[5] %}
+                    <p class="text-sm text-muted text-center" style="margin-top: var(--space-xs);">{{ m.caption if m.caption else m[5] }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Actions -->
+        <div class="text-center" style="margin-top: var(--space-xl);">
+            <a href="{{ url_for('capsule_list') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Kembali ke Daftar Kapsul
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes sparkle {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.confetti-animation {
+    animation: sparkle 1.5s ease-in-out infinite;
+}
+
+.capsule-opened {
+    box-shadow: 0 8px 32px rgba(252, 185, 178, 0.3);
+}
+</style>
+{% endblock %}

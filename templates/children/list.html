@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block title %}Daftar Anak - BabyGrow{% endblock %}
 
@@ -7,10 +7,10 @@
     <!-- Header -->
     <div class="flex justify-between items-center" style="margin-bottom: var(--space-xl);">
         <div>
-            <h1 style="margin-bottom: var(--space-xs);">Anak Anda 👶</h1>
+            <h1 style="margin-bottom: var(--space-xs);">Anak Anda</h1>
             <p class="text-muted">Kelola data anak-anak Anda</p>
         </div>
-        <a href="{{ url_for('add_child') }}" class="btn btn-primary">
+        <a href="{{ url_for('children.add_child') }}" class="btn btn-primary">
             <i class="bi bi-plus-circle"></i> Tambah Anak
         </a>
     </div>
@@ -20,8 +20,8 @@
     <div class="card empty-state">
         <div class="empty-state-icon">👶</div>
         <h3 class="empty-state-title">Belum ada data anak</h3>
-        <p class="empty-state-text">Tambahkan anak pertama Anda untuk mulai memantau pertumbuhan.</p>
-        <a href="{{ url_for('add_child') }}" class="btn btn-primary btn-lg">
+        <p class="empty-state-text">Tambahkan anak pertama Anda untuk mulai memantau pertumbuhan dan perkembangan.</p>
+        <a href="{{ url_for('children.add_child') }}" class="btn btn-primary btn-lg">
             <i class="bi bi-plus-circle"></i> Tambah Anak Pertama
         </a>
     </div>
@@ -30,10 +30,14 @@
     <div class="grid grid-2">
         {% for child in children %}
         <div class="card baby-card stagger-item">
-            <div class="baby-avatar-placeholder">
-                {% set gender = child.gender if child.gender else (child[3] if child[3] else '') %}
-                {% if gender == 'Perempuan' %}👧{% elif gender == 'Laki-laki' %}👦{% else %}👶{% endif %}
-            </div>
+            {% if child.photo_url or child[4] %}
+                <img src="{{ child.photo_url or child[4] }}" alt="{{ child.name or child[1] }}" class="baby-avatar">
+            {% else %}
+                <div class="baby-avatar-placeholder">
+                    {% set gender = child.gender if child.gender else (child[3] if child[3] else '') %}
+                    {% if gender == 'Perempuan' %}👧{% elif gender == 'Laki-laki' %}👦{% else %}👶{% endif %}
+                </div>
+            {% endif %}
             
             <div class="baby-info" style="flex: 1;">
                 <h3>{{ child.name if child.name else child[1] }}</h3>
@@ -42,21 +46,16 @@
                     {{ child.dob if child.dob else child[2] }}
                 </p>
                 <p class="text-sm text-muted">
+                    {% set gender = child.gender if child.gender else (child[3] if child[3] else '') %}
                     {% if gender %}{{ gender }}{% endif %}
                 </p>
             </div>
             
             <div class="flex flex-col gap-sm">
-                <a href="{{ url_for('growth_list', child_id=child.id if child.id else child[0]) }}" class="btn btn-primary btn-sm">
-                    📊 Pertumbuhan
+                <a href="{{ url_for('children.view_child', child_id=child.id if child.id else child[0]) }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-eye"></i> Lihat
                 </a>
-                <a href="{{ url_for('milestone_list', child_id=child.id if child.id else child[0]) }}" class="btn btn-secondary btn-sm">
-                    🎯 Milestone
-                </a>
-                <a href="{{ url_for('immunization_list', child_id=child.id if child.id else child[0]) }}" class="btn btn-success btn-sm">
-                    💉 Imunisasi
-                </a>
-                <a href="{{ url_for('edit_child', child_id=child.id if child.id else child[0]) }}" class="btn btn-ghost btn-sm">
+                <a href="{{ url_for('children.edit_child', child_id=child.id if child.id else child[0]) }}" class="btn btn-ghost btn-sm">
                     <i class="bi bi-pencil"></i> Edit
                 </a>
             </div>

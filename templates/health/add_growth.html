@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block title %}Tambah Pertumbuhan - BabyGrow{% endblock %}
 
@@ -8,7 +8,7 @@
         {% set child_id = child.id if child.id else child[0] %}
         {% set child_name = child.name if child.name else child[1] %}
         
-        <a href="{{ url_for('growth_list', child_id=child_id) }}" class="text-muted" style="display: inline-flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-md);">
+        <a href="{{ url_for('health.growth_list', child_id=child_id) }}" class="text-muted" style="display: inline-flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-md);">
             <i class="bi bi-arrow-left"></i> Kembali
         </a>
         <h1>📊 Tambah Data Pertumbuhan</h1>
@@ -35,6 +35,11 @@
                 <div class="form-group">
                     <label class="form-label">Lingkar Kepala (cm)</label>
                     <input type="number" name="head_circ" class="form-input" step="0.1" placeholder="misal: 42">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Catatan</label>
+                    <textarea name="notes" class="form-textarea" rows="2" placeholder="Catatan tambahan..."></textarea>
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">

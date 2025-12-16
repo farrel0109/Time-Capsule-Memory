@@ -1,28 +1,19 @@
+# Flask Extensions
+# Centralized place for Flask extensions initialization
+
+from flask import g
 import os
 import sqlite3
-from flask import g
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
-
-BASE_DIR = os.path.dirname(__file__)
-DATABASE_DIR = os.path.join(BASE_DIR, 'database')
-DATABASE = os.path.join(DATABASE_DIR, 'balita.db')
-
-# Environment-driven DB selection. Set DB_TYPE=mysql to use MySQL.
-DB_TYPE = os.environ.get('DB_TYPE', 'sqlite').lower()
 
 
 class MySQLDBWrapper:
-    """A thin wrapper to provide a sqlite-like `execute` interface over
-    mysql-connector so the rest of the app can call `db.execute(...)`.
-    """
+    """A thin wrapper to provide sqlite-like interface over mysql-connector."""
+    
     def __init__(self, conn):
         self.conn = conn
 
     def _query(self, query):
-        # convert sqlite-style ? placeholders to MySQL %s
+        # Convert sqlite-style ? placeholders to MySQL %s
         return query.replace('?', '%s')
 
     def execute(self, query, params=()):
@@ -43,35 +34,38 @@ class MySQLDBWrapper:
 
 def get_db():
     """Return a DB connection/wrapper stored on flask.g."""
+    from flask import current_app
+    
     db = getattr(g, '_database', None)
     if db is None:
-        if DB_TYPE == 'mysql':
-            # lazy import so mysql dependency is optional for sqlite users
+        config = current_app.config
+        
+        if config.get('DB_TYPE') == 'mysql':
             import mysql.connector
-            host = os.environ.get('MYSQL_HOST', 'localhost')
-            port = int(os.environ.get('MYSQL_PORT', '3306'))
-            user = os.environ.get('MYSQL_USER', 'root')
-            password = os.environ.get('MYSQL_PASSWORD', '')
-            database = os.environ.get('MYSQL_DB', 'balita_db')
+            
             conn = mysql.connector.connect(
-                host=host,
-                port=port,
-                user=user,
-                password=password,
-                database=database
+                host=config.get('MYSQL_HOST'),
+                port=config.get('MYSQL_PORT'),
+                user=config.get('MYSQL_USER'),
+                password=config.get('MYSQL_PASS'),
+                database=config.get('MYSQL_DB')
             )
             db = MySQLDBWrapper(conn)
         else:
-            os.makedirs(DATABASE_DIR, exist_ok=True)
-            conn = sqlite3.connect(DATABASE)
+            db_path = config.get('DATABASE_PATH')
+            db_dir = os.path.dirname(db_path)
+            os.makedirs(db_dir, exist_ok=True)
+            
+            conn = sqlite3.connect(db_path)
             conn.row_factory = sqlite3.Row
             db = conn
+        
         g._database = db
     return db
 
 
-def close_connection(exception):
-    """Close the DB connection at the end of each request."""
+def close_db(exception=None):
+    """Close database connection at end of request."""
     db = getattr(g, '_database', None)
     if db is not None:
         try:
@@ -81,20 +75,27 @@ def close_connection(exception):
 
 
 def init_db():
-    """Create the database tables if they don't already exist."""
+    """Create tables if they don't exist."""
+    from flask import current_app
+    
     db = get_db()
-
-    # MySQL uses different AUTO_INCREMENT syntax
-    if DB_TYPE == 'mysql':
-        pk = 'INT AUTO_INCREMENT PRIMARY KEY'
-    else:
-        pk = 'INTEGER PRIMARY KEY AUTOINCREMENT'
+    config = current_app.config
+    db_type = config.get('DB_TYPE', 'sqlite')
 
     def exec_sql(sql):
-        try:
-            db.execute(sql)
-        except Exception:
-            pass
+        if db_type == 'mysql':
+            cur = db.execute(sql)
+            try:
+                cur.close()
+            except Exception:
+                pass
+        else:
+            cur = db.cursor()
+            cur.execute(sql)
+            cur.close()
+
+    # Primary key clause per DB type
+    pk = 'INT PRIMARY KEY AUTO_INCREMENT' if db_type == 'mysql' else 'INTEGER PRIMARY KEY AUTOINCREMENT'
 
     # Users table
     exec_sql(f"""
@@ -117,11 +118,10 @@ def init_db():
             id {pk},
             user_id INTEGER NOT NULL,
             name TEXT NOT NULL,
-            dob TEXT,
+            dob TEXT NOT NULL,
             gender TEXT,
             photo_url TEXT,
             blood_type TEXT,
-            allergies TEXT,
             notes TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -132,7 +132,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS growth (
             id {pk},
             child_id INTEGER NOT NULL,
-            record_date TEXT,
+            record_date TEXT NOT NULL,
             weight REAL,
             height REAL,
             head_circ REAL,
@@ -141,13 +141,13 @@ def init_db():
         )
     """)
 
-    # Development/Milestone records
+    # Development milestones
     exec_sql(f"""
         CREATE TABLE IF NOT EXISTS development (
             id {pk},
             child_id INTEGER NOT NULL,
             category TEXT DEFAULT 'general',
-            milestone TEXT,
+            milestone TEXT NOT NULL,
             status TEXT DEFAULT 'pending',
             achieved_date TEXT,
             noted TEXT,
@@ -160,17 +160,18 @@ def init_db():
         CREATE TABLE IF NOT EXISTS immunization (
             id {pk},
             child_id INTEGER NOT NULL,
-            vaccine TEXT,
+            vaccine TEXT NOT NULL,
             scheduled_date TEXT,
             date_given TEXT,
             status TEXT DEFAULT 'pending',
+            batch_number TEXT,
             location TEXT,
             notes TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
-    # Time Capsule table
+    # Time Capsules (NEW)
     exec_sql(f"""
         CREATE TABLE IF NOT EXISTS time_capsules (
             id {pk},
@@ -182,11 +183,12 @@ def init_db():
             is_sealed INTEGER DEFAULT 0,
             sealed_at TIMESTAMP,
             opened_at TIMESTAMP,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
-    # Capsule Media (photos, audio, video)
+    # Capsule Media (NEW)
     exec_sql(f"""
         CREATE TABLE IF NOT EXISTS capsule_media (
             id {pk},
@@ -195,6 +197,21 @@ def init_db():
             file_url TEXT NOT NULL,
             thumbnail_url TEXT,
             caption TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # General Media (for gallery)
+    exec_sql(f"""
+        CREATE TABLE IF NOT EXISTS media (
+            id {pk},
+            child_id INTEGER NOT NULL,
+            media_type TEXT NOT NULL,
+            file_url TEXT NOT NULL,
+            thumbnail_url TEXT,
+            caption TEXT,
+            taken_date TEXT,
+            is_favorite INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)

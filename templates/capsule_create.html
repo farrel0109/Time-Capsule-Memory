@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Buat Kapsul Waktu - BabyGrow{% endblock %}
+
+{% block content %}
+<div class="container animate-fadeIn">
+    <div style="max-width: 700px; margin: 0 auto;">
+        <!-- Header -->
+        <div style="margin-bottom: var(--space-xl); text-align: center;">
+            <div style="font-size: 4rem; margin-bottom: var(--space-md);">✉️</div>
+            <h1 style="margin-bottom: var(--space-xs);">Buat Kapsul Waktu</h1>
+            <p class="text-muted">Tulis pesan cinta untuk si kecil yang akan dibaca di masa depan</p>
+        </div>
+        
+        <div class="card capsule-card">
+            <form method="POST">
+                <div class="form-group">
+                    <label class="form-label">Untuk Anak *</label>
+                    <select name="child_id" class="form-select" required>
+                        {% for child in children %}
+                        <option value="{{ child.id if child.id else child[0] }}">
+                            {{ child.name if child.name else child[1] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Judul Kapsul *</label>
+                    <input type="text" name="title" class="form-input" 
+                           placeholder="misal: Surat untuk ulang tahun ke-17" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Surat Cinta 💌</label>
+                    <textarea name="letter_content" class="form-textarea letter-editor" rows="10" 
+                              placeholder="Sayang...
+
+Saat kamu membaca surat ini, kamu sudah dewasa. Mama/Papa ingin kamu tahu betapa kami mencintaimu sejak kamu masih bayi mungil...
+
+Kami ingat saat pertama kali menggendongmu, hati kami penuh dengan kebahagiaan yang luar biasa..."></textarea>
+                </div>
+                
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Tanggal Dibuka *</label>
+                        <input type="date" name="unlock_date" class="form-input" required>
+                        <small class="text-muted">Kapsul hanya bisa dibuka setelah tanggal ini</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Momen Spesial</label>
+                        <select name="unlock_occasion" class="form-select">
+                            <option value="">-- Pilih Momen --</option>
+                            <option value="Ulang Tahun ke-5">Ulang Tahun ke-5</option>
+                            <option value="Ulang Tahun ke-10">Ulang Tahun ke-10</option>
+                            <option value="Ulang Tahun ke-17">Ulang Tahun ke-17</option>
+                            <option value="Ulang Tahun ke-18">Ulang Tahun ke-18</option>
+                            <option value="Lulus SD">Lulus SD</option>
+                            <option value="Lulus SMP">Lulus SMP</option>
+                            <option value="Lulus SMA">Lulus SMA</option>
+                            <option value="Wisuda Kuliah">Wisuda Kuliah</option>
+                            <option value="Pernikahan">Pernikahan</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex gap-md" style="margin-top: var(--space-xl);">
+                    <button type="submit" class="btn btn-primary btn-lg" style="flex: 1;">
+                        <i class="bi bi-envelope-plus"></i> Simpan Kapsul
+                    </button>
+                    <a href="{{ url_for('capsule_list') }}" class="btn btn-ghost btn-lg">Batal</a>
+                </div>
+            </form>
+        </div>
+        
+        <div class="text-center" style="margin-top: var(--space-lg);">
+            <p class="text-sm text-muted">
+                💡 <strong>Tips:</strong> Anda bisa mengedit kapsul sebelum menyegelnya. 
+                Setelah disegel, kapsul tidak bisa diedit dan hanya bisa dibuka pada tanggal yang ditentukan.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

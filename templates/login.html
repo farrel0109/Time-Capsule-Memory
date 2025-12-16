@@ -1,15 +1,52 @@
 {% extends 'base.html' %}
+
+{% block title %}Masuk - BabyGrow{% endblock %}
+
 {% block content %}
-  <h2>Login</h2>
-  <form method="post">
-    <div class="mb-3">
-      <label class="form-label">Username</label>
-      <input class="form-control" name="username" required>
+<div style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: var(--space-lg);">
+    <div class="card animate-slideUp" style="width: 100%; max-width: 400px;">
+        <div class="text-center" style="margin-bottom: var(--space-xl);">
+            <div style="font-size: 3rem; margin-bottom: var(--space-sm);">🍼</div>
+            <h1 style="font-size: 1.5rem; margin-bottom: var(--space-xs);">Selamat Datang!</h1>
+            <p class="text-muted">Masuk ke akun BabyGrow Anda</p>
+        </div>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label class="form-label" for="username">
+                    <i class="bi bi-person"></i> Username
+                </label>
+                <input type="text" 
+                       id="username" 
+                       name="username" 
+                       class="form-input" 
+                       placeholder="Masukkan username"
+                       required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="password">
+                    <i class="bi bi-lock"></i> Password
+                </label>
+                <input type="password" 
+                       id="password" 
+                       name="password" 
+                       class="form-input" 
+                       placeholder="Masukkan password"
+                       required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: var(--space-md);">
+                <i class="bi bi-box-arrow-in-right"></i> Masuk
+            </button>
+        </form>
+        
+        <div class="text-center" style="margin-top: var(--space-lg);">
+            <p class="text-muted">
+                Belum punya akun? 
+                <a href="{{ url_for('register') }}">Daftar sekarang</a>
+            </p>
+        </div>
     </div>
-    <div class="mb-3">
-      <label class="form-label">Password</label>
-      <input type="password" class="form-control" name="password" required>
-    </div>
-    <button class="btn btn-primary">Login</button>
-  </form>
+</div>
 {% endblock %}

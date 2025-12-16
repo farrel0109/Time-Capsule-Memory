@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}{{ child.name if child.name else child[1] }} - BabyGrow{% endblock %}
+
+{% block content %}
+<div class="container animate-fadeIn">
+    <!-- Back Link -->
+    <a href="{{ url_for('children.list_children') }}" class="text-muted" style="display: inline-flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-lg);">
+        <i class="bi bi-arrow-left"></i> Kembali ke Daftar Anak
+    </a>
+    
+    <!-- Child Profile Card -->
+    <div class="card baby-card" style="margin-bottom: var(--space-xl);">
+        {% set child_name = child.name if child.name else child[1] %}
+        {% set child_dob = child.dob if child.dob else child[2] %}
+        {% set child_gender = child.gender if child.gender else child[3] %}
+        {% set child_photo = child.photo_url if child.photo_url else (child[4] if child|length > 4 else None) %}
+        {% set child_id = child.id if child.id else child[0] %}
+        
+        {% if child_photo %}
+            <img src="{{ child_photo }}" alt="{{ child_name }}" class="baby-avatar" style="width: 120px; height: 120px;">
+        {% else %}
+            <div class="baby-avatar-placeholder" style="width: 120px; height: 120px; font-size: 3rem;">
+                {% if child_gender == 'Perempuan' %}👧{% elif child_gender == 'Laki-laki' %}👦{% else %}👶{% endif %}
+            </div>
+        {% endif %}
+        
+        <div class="baby-info" style="flex: 1;">
+            <h1 style="font-size: 1.75rem; margin-bottom: var(--space-sm);">{{ child_name }}</h1>
+            <div class="flex gap-md flex-wrap">
+                <span class="badge badge-pending">
+                    <i class="bi bi-calendar-heart"></i> {{ child_dob }}
+                </span>
+                {% if child_gender %}
+                <span class="badge badge-success">
+                    {% if child_gender == 'Perempuan' %}👧{% else %}👦{% endif %} {{ child_gender }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="flex flex-col gap-sm">
+            <a href="{{ url_for('children.edit_child', child_id=child_id) }}" class="btn btn-secondary">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+            <form method="POST" action="{{ url_for('children.delete_child', child_id=child_id) }}" 
+                  onsubmit="return confirm('Yakin ingin menghapus data {{ child_name }}? Semua data terkait akan ikut terhapus.');">
+                <button type="submit" class="btn btn-ghost" style="width: 100%; color: var(--color-error);">
+                    <i class="bi bi-trash"></i> Hapus
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="grid grid-4" style="margin-bottom: var(--space-xl);">
+        <!-- Latest Growth -->
+        <div class="card stagger-item">
+            <div class="card-icon peach">⚖️</div>
+            {% if latest_growth %}
+                {% set weight = latest_growth.weight if latest_growth.weight else latest_growth[0] %}
+                {% set height = latest_growth.height if latest_growth.height else latest_growth[1] %}
+                <div class="card-value" style="margin-top: var(--space-md);">{{ weight or '-' }}</div>
+                <div class="card-label">kg (Berat)</div>
+            {% else %}
+                <div class="card-value" style="margin-top: var(--space-md);">-</div>
+                <div class="card-label">Belum ada data</div>
+            {% endif %}
+        </div>
+        
+        <div class="card stagger-item">
+            <div class="card-icon mint">📏</div>
+            {% if latest_growth %}
+                {% set height = latest_growth.height if latest_growth.height else latest_growth[1] %}
+                <div class="card-value" style="margin-top: var(--space-md);">{{ height or '-' }}</div>
+                <div class="card-label">cm (Tinggi)</div>
+            {% else %}
+                <div class="card-value" style="margin-top: var(--space-md);">-</div>
+                <div class="card-label">Belum ada data</div>
+            {% endif %}
+        </div>
+        
+        <!-- Milestone Progress -->
+        <div class="card stagger-item">
+            <div class="card-icon lavender">🎯</div>
+            {% if milestone_stats %}
+                {% set total = milestone_stats.total if milestone_stats.total else milestone_stats[0] %}
+                {% set done = milestone_stats.done if milestone_stats.done else milestone_stats[1] %}
+                <div class="card-value" style="margin-top: var(--space-md);">{{ done|int or 0 }}/{{ total|int or 0 }}</div>
+                <div class="card-label">Milestone</div>
+            {% else %}
+                <div class="card-value" style="margin-top: var(--space-md);">0/0</div>
+                <div class="card-label">Milestone</div>
+            {% endif %}
+        </div>
+        
+        <!-- Vaccination Progress -->
+        <div class="card stagger-item">
+            <div class="card-icon blush">💉</div>
+            {% if vaccine_stats %}
+                {% set total = vaccine_stats.total if vaccine_stats.total else vaccine_stats[0] %}
+                {% set done = vaccine_stats.done if vaccine_stats.done else vaccine_stats[1] %}
+                <div class="card-value" style="margin-top: var(--space-md);">{{ done|int or 0 }}/{{ total|int or 0 }}</div>
+                <div class="card-label">Vaksin</div>
+            {% else %}
+                <div class="card-value" style="margin-top: var(--space-md);">0/0</div>
+                <div class="card-label">Vaksin</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <h2 style="margin-bottom: var(--space-md);">Menu Cepat</h2>
+    <div class="grid grid-4">
+        <a href="{{ url_for('health.growth_list', child_id=child_id) }}" class="card stagger-item" style="text-align: center; text-decoration: none;">
+            <div style="font-size: 2.5rem; margin-bottom: var(--space-sm);">📊</div>
+            <h3 style="font-size: 1rem; margin: 0;">Pertumbuhan</h3>
+            <p class="text-sm text-muted">Berat, tinggi, grafik</p>
+        </a>
+        
+        <a href="{{ url_for('health.milestone_list', child_id=child_id) }}" class="card stagger-item" style="text-align: center; text-decoration: none;">
+            <div style="font-size: 2.5rem; margin-bottom: var(--space-sm);">🎯</div>
+            <h3 style="font-size: 1rem; margin: 0;">Milestone</h3>
+            <p class="text-sm text-muted">Perkembangan anak</p>
+        </a>
+        
+        <a href="{{ url_for('health.immunization_list', child_id=child_id) }}" class="card stagger-item" style="text-align: center; text-decoration: none;">
+            <div style="font-size: 2.5rem; margin-bottom: var(--space-sm);">💉</div>
+            <h3 style="font-size: 1rem; margin: 0;">Imunisasi</h3>
+            <p class="text-sm text-muted">Jadwal vaksin</p>
+        </a>
+        
+        <a href="{{ url_for('capsule.create_capsule') }}" class="card stagger-item capsule-card" style="text-align: center; text-decoration: none;">
+            <div style="font-size: 2.5rem; margin-bottom: var(--space-sm);">💌</div>
+            <h3 style="font-size: 1rem; margin: 0;">Kapsul Waktu</h3>
+            <p class="text-sm text-muted">Simpan kenangan</p>
+        </a>
+    </div>
+</div>
+{% endblock %}

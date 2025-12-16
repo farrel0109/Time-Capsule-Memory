@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}🔒 Kapsul Tersegel - BabyGrow{% endblock %}
+
+{% block content %}
+<div class="container animate-fadeIn">
+    <div style="max-width: 600px; margin: 0 auto; text-align: center;">
+        {% set cap_id = capsule.id if capsule.id else capsule[0] %}
+        {% set cap_title = capsule.title if capsule.title else capsule[2] %}
+        {% set cap_unlock = capsule.unlock_date if capsule.unlock_date else capsule[4] %}
+        {% set cap_occasion = capsule.unlock_occasion if capsule.unlock_occasion else capsule[5] %}
+        {% set cap_child = capsule.child_name if capsule.child_name else capsule[10] %}
+        {% set cap_sealed = capsule.sealed_at if capsule.sealed_at else capsule[7] %}
+        
+        <a href="{{ url_for('capsule_list') }}" class="text-muted" style="display: inline-flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-xl);">
+            <i class="bi bi-arrow-left"></i> Kembali ke Daftar
+        </a>
+        
+        <!-- Sealed Capsule Visual -->
+        <div class="card capsule-card capsule-sealed" style="padding: var(--space-2xl);">
+            <div class="capsule-seal-animation">
+                <div style="font-size: 6rem; margin-bottom: var(--space-md); animation: pulse 2s infinite;">
+                    🔐
+                </div>
+            </div>
+            
+            <h1 style="margin-bottom: var(--space-xs);">{{ cap_title }}</h1>
+            <p class="text-muted">Kapsul untuk {{ cap_child }}</p>
+            
+            <div class="countdown-box" style="margin: var(--space-xl) 0; padding: var(--space-lg); background: var(--color-cream); border-radius: var(--radius-lg);">
+                <p class="text-sm text-muted" style="margin-bottom: var(--space-sm);">🗓️ Akan terbuka pada:</p>
+                <h2 style="color: var(--color-primary); margin: 0;">{{ cap_unlock }}</h2>
+                {% if cap_occasion %}
+                <p class="text-muted" style="margin-top: var(--space-sm);">🎉 {{ cap_occasion }}</p>
+                {% endif %}
+            </div>
+            
+            <div id="countdown" style="display: flex; justify-content: center; gap: var(--space-md); margin-bottom: var(--space-xl);">
+                <div class="countdown-item">
+                    <div id="days" style="font-size: 2rem; font-weight: bold; color: var(--color-primary);">--</div>
+                    <div class="text-sm text-muted">Hari</div>
+                </div>
+                <div class="countdown-item">
+                    <div id="hours" style="font-size: 2rem; font-weight: bold; color: var(--color-primary);">--</div>
+                    <div class="text-sm text-muted">Jam</div>
+                </div>
+                <div class="countdown-item">
+                    <div id="minutes" style="font-size: 2rem; font-weight: bold; color: var(--color-primary);">--</div>
+                    <div class="text-sm text-muted">Menit</div>
+                </div>
+                <div class="countdown-item">
+                    <div id="seconds" style="font-size: 2rem; font-weight: bold; color: var(--color-primary);">--</div>
+                    <div class="text-sm text-muted">Detik</div>
+                </div>
+            </div>
+            
+            {% if can_open %}
+            <div style="animation: bounce 1s infinite;">
+                <form method="POST" action="{{ url_for('capsule_open', capsule_id=cap_id) }}">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        ✨ Buka Kapsul Sekarang! ✨
+                    </button>
+                </form>
+            </div>
+            {% else %}
+            <p class="text-muted">
+                🔒 Kapsul ini masih tersegel. Bersabarlah hingga waktunya tiba.
+            </p>
+            {% endif %}
+            
+            <div style="margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px dashed var(--color-peach);">
+                <p class="text-sm text-muted">
+                    Disegel pada: {{ cap_sealed[:10] if cap_sealed else 'Tidak diketahui' }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Countdown timer
+const unlockDate = new Date('{{ cap_unlock }}').getTime();
+
+function updateCountdown() {
+    const now = new Date().getTime();
+    const distance = unlockDate - now;
+    
+    if (distance < 0) {
+        document.getElementById('days').textContent = '0';
+        document.getElementById('hours').textContent = '0';
+        document.getElementById('minutes').textContent = '0';
+        document.getElementById('seconds').textContent = '0';
+        return;
+    }
+    
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    
+    document.getElementById('days').textContent = days;
+    document.getElementById('hours').textContent = hours;
+    document.getElementById('minutes').textContent = minutes;
+    document.getElementById('seconds').textContent = seconds;
+}
+
+updateCountdown();
+setInterval(updateCountdown, 1000);
+</script>
+{% endblock %}

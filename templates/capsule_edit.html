@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ capsule.title if capsule.title else capsule[2] }} - BabyGrow{% endblock %}
+
+{% block content %}
+<div class="container animate-fadeIn">
+    <div style="max-width: 700px; margin: 0 auto;">
+        {% set cap_id = capsule.id if capsule.id else capsule[0] %}
+        {% set cap_title = capsule.title if capsule.title else capsule[2] %}
+        {% set cap_content = capsule.letter_content if capsule.letter_content else capsule[3] %}
+        {% set cap_unlock = capsule.unlock_date if capsule.unlock_date else capsule[4] %}
+        {% set cap_occasion = capsule.unlock_occasion if capsule.unlock_occasion else capsule[5] %}
+        {% set cap_child = capsule.child_name if capsule.child_name else capsule[10] %}
+        
+        <a href="{{ url_for('capsule_list') }}" class="text-muted" style="display: inline-flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-md);">
+            <i class="bi bi-arrow-left"></i> Kembali ke Daftar Kapsul
+        </a>
+        
+        <div class="card capsule-card">
+            <div style="text-align: center; margin-bottom: var(--space-lg);">
+                <div style="font-size: 3rem; margin-bottom: var(--space-sm);">✉️</div>
+                <span class="badge badge-warning">📝 Draft - Belum Disegel</span>
+            </div>
+            
+            <form method="POST" action="{{ url_for('capsule_update', capsule_id=cap_id) }}">
+                <div class="form-group">
+                    <label class="form-label">Judul Kapsul</label>
+                    <input type="text" name="title" class="form-input" value="{{ cap_title }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Untuk: {{ cap_child }}</label>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Surat Cinta 💌</label>
+                    <textarea name="letter_content" class="form-textarea letter-editor" rows="12">{{ cap_content or '' }}</textarea>
+                </div>
+                
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Tanggal Dibuka</label>
+                        <input type="date" name="unlock_date" class="form-input" value="{{ cap_unlock }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Momen Spesial</label>
+                        <input type="text" name="unlock_occasion" class="form-input" value="{{ cap_occasion or '' }}" placeholder="misal: Ulang Tahun ke-17">
+                    </div>
+                </div>
+                
+                <div class="flex gap-md" style="margin-top: var(--space-lg);">
+                    <button type="submit" class="btn btn-secondary btn-lg" style="flex: 1;">
+                        <i class="bi bi-save"></i> Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+            
+            <hr style="margin: var(--space-xl) 0; border: none; border-top: 2px dashed var(--color-peach);">
+            
+            <!-- Photo Upload Section -->
+            <div style="margin-bottom: var(--space-xl);">
+                <h3><i class="bi bi-camera"></i> Tambah Foto Kenangan</h3>
+                
+                {% if media %}
+                <div class="upload-preview" style="margin-bottom: var(--space-lg);">
+                    {% for m in media %}
+                    {% set m_url = m.file_url if m.file_url else m[3] %}
+                    {% set m_caption = m.caption if m.caption else m[5] %}
+                    <div class="polaroid-card">
+                        <img src="{{ m_url }}" alt="{{ m_caption }}" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm);">
+                        {% if m_caption %}
+                        <p class="text-sm text-center" style="margin-top: var(--space-xs);">{{ m_caption }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <form method="POST" action="{{ url_for('capsule_upload_media', capsule_id=cap_id) }}" enctype="multipart/form-data">
+                    <div class="upload-area" onclick="document.getElementById('photoInput').click();">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                        <p class="text-muted">Klik untuk upload foto</p>
+                        <input type="file" id="photoInput" name="photo" accept="image/*" style="display: none;" onchange="this.form.submit();">
+                    </div>
+                </form>
+            </div>
+            
+            <hr style="margin: var(--space-xl) 0; border: none; border-top: 2px dashed var(--color-peach);">
+            
+            <div class="text-center">
+                <h3>🔐 Segel Kapsul</h3>
+                <p class="text-muted" style="margin-bottom: var(--space-md);">
+                    Setelah disegel, kapsul tidak bisa diedit dan hanya bisa dibuka pada tanggal <strong>{{ cap_unlock }}</strong>
+                </p>
+                <form method="POST" action="{{ url_for('capsule_seal', capsule_id=cap_id) }}" 
+                      onsubmit="return confirm('Yakin ingin menyegel kapsul ini? Setelah disegel, tidak bisa diedit lagi.');">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-lock"></i> Segel Kapsul Sekarang
+                    </button>
+                </form>
+            </div>
+            
+            <hr style="margin: var(--space-xl) 0; border: none; border-top: 1px solid var(--color-peach);">
+            
+            <div class="text-center">
+                <form method="POST" action="{{ url_for('capsule_delete', capsule_id=cap_id) }}" 
+                      onsubmit="return confirm('Yakin ingin menghapus kapsul ini?');">
+                    <button type="submit" class="btn btn-ghost" style="color: var(--color-error);">
+                        <i class="bi bi-trash"></i> Hapus Kapsul
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
