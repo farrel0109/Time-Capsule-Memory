@@ -12,6 +12,16 @@ with app.app_context():
 
 @app.route('/')
 def index():
+    """Landing page for unauthenticated users, redirect to dashboard for authenticated."""
+    user_id = session.get('user_id')
+    if user_id:
+        return redirect(url_for('dashboard'))
+    return render_template('landing.html')
+
+
+@app.route('/dashboard')
+def dashboard():
+    """Protected dashboard - requires authentication."""
     db = get_db()
     user_id = session.get('user_id')
     if not user_id:
@@ -99,7 +109,7 @@ def login():
             except Exception:
                 user_id = row[0]
             session['user_id'] = user_id
-            return redirect(url_for('index'))
+            return redirect(url_for('dashboard'))
         else:
             flash('Login gagal. Periksa username/password.')
     return render_template('login.html')
