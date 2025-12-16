@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}👨‍👩‍👧 Akses Keluarga - {{ child.name }}{% endblock %}
+
+{% block content %}
+<div class="container animate-fadeIn">
+    <div style="max-width: 700px; margin: 0 auto;">
+        <a href="{{ url_for('children') }}" class="text-muted" style="display: inline-flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-md);">
+            <i class="bi bi-arrow-left"></i> Kembali ke Daftar Anak
+        </a>
+        
+        <div class="card" style="padding: var(--space-xl); margin-bottom: var(--space-lg);">
+            <div style="text-align: center; margin-bottom: var(--space-xl);">
+                <div style="font-size: 4rem; margin-bottom: var(--space-sm);">👨‍👩‍👧</div>
+                <h2>Akses Keluarga - {{ child.name }}</h2>
+                <p class="text-muted">Undang anggota keluarga untuk melihat atau mengedit data</p>
+            </div>
+            
+            <!-- Invite Form -->
+            <form method="POST" action="{{ url_for('invite_family', child_id=child.id) }}">
+                <div class="form-group">
+                    <label class="form-label">Email yang diundang</label>
+                    <input type="email" name="email" class="form-input" placeholder="nenek@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Peran</label>
+                    <div style="display: flex; gap: var(--space-md);">
+                        <label style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer;">
+                            <input type="radio" name="role" value="viewer" checked>
+                            <span>👀 Viewer (Hanya lihat)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: var(--space-xs); cursor: pointer;">
+                            <input type="radio" name="role" value="editor">
+                            <span>✏️ Editor (Bisa edit)</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                    <i class="bi bi-send"></i> Kirim Undangan
+                </button>
+            </form>
+        </div>
+        
+        <!-- Active Invites -->
+        <div class="card" style="padding: var(--space-lg);">
+            <h4 style="margin-bottom: var(--space-md);">📋 Daftar Akses</h4>
+            
+            {% if access_list %}
+            <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+                {% for access in access_list %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-md); background: var(--color-cloud); border-radius: var(--radius-md);">
+                    <div>
+                        <div style="font-weight: 600;">
+                            {% if access.status == 'pending' %}
+                            📧 {{ access.invite_email }}
+                            {% else %}
+                            👤 {{ access.username or access.invite_email }}
+                            {% endif %}
+                        </div>
+                        <div class="text-sm text-muted">
+                            {% if access.role == 'editor' %}
+                            ✏️ Editor
+                            {% else %}
+                            👀 Viewer
+                            {% endif %}
+                            • 
+                            {% if access.status == 'pending' %}
+                            <span class="badge badge-warning">Menunggu</span>
+                            {% else %}
+                            <span class="badge badge-success">Aktif</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <form method="POST" action="{{ url_for('revoke_access', child_id=child.id, access_id=access.id) }}" style="margin: 0;">
+                        <button type="submit" class="btn btn-ghost" style="color: var(--color-error);" onclick="return confirm('Yakin ingin mencabut akses?');">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center" style="padding: var(--space-lg);">
+                Belum ada anggota keluarga yang diundang
+            </p>
+            {% endif %}
+        </div>
+        
+        <!-- Share Link -->
+        <div class="card" style="padding: var(--space-lg); margin-top: var(--space-lg); background: var(--color-mint);">
+            <h5 style="margin-bottom: var(--space-sm);">🔗 Link Undangan</h5>
+            <p class="text-sm text-muted" style="margin-bottom: var(--space-md);">
+                Bagikan link ini kepada keluarga yang tidak punya akun BabyGrow
+            </p>
+            <div style="display: flex; gap: var(--space-sm);">
+                <input type="text" class="form-input" value="{{ invite_url }}" id="invite-link" readonly style="flex: 1;">
+                <button class="btn btn-primary" onclick="copyLink()">
+                    <i class="bi bi-clipboard"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyLink() {
+    const input = document.getElementById('invite-link');
+    input.select();
+    document.execCommand('copy');
+    
+    if (window.BabyGrowCelebrate) {
+        window.BabyGrowCelebrate.showBadge('📋 Link disalin!', '✓');
+    }
+}
+</script>
+{% endblock %}

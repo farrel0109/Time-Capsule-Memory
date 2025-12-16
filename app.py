@@ -924,7 +924,281 @@ END:VEVENT
     return response
 
 
+# ==================== FAMILY ACCESS ROUTES ====================
+
+@app.route('/child/<int:child_id>/family', methods=['GET'])
+def family_access(child_id):
+    """Manage family access for a child."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    # Verify ownership
+    cur = db.execute('SELECT id, name FROM children WHERE id=? AND user_id=?', (child_id, user_id))
+    child = cur.fetchone()
+    if not child:
+        flash('Anak tidak ditemukan.')
+        return redirect(url_for('children'))
+    
+    # Get access list
+    cur = db.execute('''
+        SELECT fa.*, u.username 
+        FROM family_access fa
+        LEFT JOIN users u ON fa.user_id = u.id
+        WHERE fa.child_id = ?
+        ORDER BY fa.created_at DESC
+    ''', (child_id,))
+    access_list = cur.fetchall()
+    
+    # Generate invite URL
+    import secrets
+    invite_code = secrets.token_urlsafe(16)
+    invite_url = request.host_url + f'join/{invite_code}'
+    
+    return render_template('family_access.html',
+                          child={'id': child['id'] if isinstance(child, dict) else child[0],
+                                'name': child['name'] if isinstance(child, dict) else child[1]},
+                          access_list=access_list,
+                          invite_url=invite_url)
+
+
+@app.route('/child/<int:child_id>/invite', methods=['POST'])
+def invite_family(child_id):
+    """Send invite to family member."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    # Verify ownership
+    cur = db.execute('SELECT id FROM children WHERE id=? AND user_id=?', (child_id, user_id))
+    if not cur.fetchone():
+        flash('Anak tidak ditemukan.')
+        return redirect(url_for('children'))
+    
+    email = request.form.get('email', '').strip()
+    role = request.form.get('role', 'viewer')
+    
+    if not email:
+        flash('Email tidak boleh kosong.')
+        return redirect(url_for('family_access', child_id=child_id))
+    
+    # Generate invite code
+    import secrets
+    invite_code = secrets.token_urlsafe(16)
+    
+    # Check if already invited
+    cur = db.execute('SELECT id FROM family_access WHERE child_id=? AND invite_email=?', (child_id, email))
+    if cur.fetchone():
+        flash('Email ini sudah diundang sebelumnya.')
+        return redirect(url_for('family_access', child_id=child_id))
+    
+    # Create invite
+    db.execute('''
+        INSERT INTO family_access (child_id, invite_code, invite_email, role, invited_by)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (child_id, invite_code, email, role, user_id))
+    db.commit()
+    
+    flash(f'✉️ Undangan berhasil dikirim ke {email}!')
+    return redirect(url_for('family_access', child_id=child_id))
+
+
+@app.route('/child/<int:child_id>/revoke/<int:access_id>', methods=['POST'])
+def revoke_access(child_id, access_id):
+    """Revoke family access."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    db.execute('DELETE FROM family_access WHERE id=? AND child_id=?', (access_id, child_id))
+    db.commit()
+    
+    flash('Akses berhasil dicabut.')
+    return redirect(url_for('family_access', child_id=child_id))
+
+
+@app.route('/join/<invite_code>')
+def join_family(invite_code):
+    """Accept family invite."""
+    db = get_db()
+    user_id = session.get('user_id')
+    
+    if not user_id:
+        flash('Silakan login terlebih dahulu untuk menerima undangan.')
+        session['pending_invite'] = invite_code
+        return redirect(url_for('login'))
+    
+    # Find invite
+    cur = db.execute('''
+        SELECT fa.*, c.name as child_name 
+        FROM family_access fa
+        JOIN children c ON fa.child_id = c.id
+        WHERE fa.invite_code = ? AND fa.status = 'pending'
+    ''', (invite_code,))
+    invite = cur.fetchone()
+    
+    if not invite:
+        flash('Undangan tidak valid atau sudah digunakan.')
+        return redirect(url_for('dashboard'))
+    
+    # Accept invite
+    from datetime import datetime
+    db.execute('''
+        UPDATE family_access 
+        SET user_id = ?, status = 'accepted', accepted_at = ?
+        WHERE invite_code = ?
+    ''', (user_id, datetime.now().isoformat(), invite_code))
+    db.commit()
+    
+    child_name = invite['child_name'] if isinstance(invite, dict) else invite[-1]
+    flash(f'🎉 Selamat! Anda sekarang bisa melihat data {child_name}.')
+    return redirect(url_for('dashboard'))
+
+
+# ==================== SCHEDULED LETTERS ROUTES ====================
+
+@app.route('/child/<int:child_id>/letters', methods=['GET'])
+def scheduled_letters(child_id):
+    """View scheduled letters for a child."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    # Verify ownership
+    cur = db.execute('SELECT id, name FROM children WHERE id=? AND user_id=?', (child_id, user_id))
+    child = cur.fetchone()
+    if not child:
+        flash('Anak tidak ditemukan.')
+        return redirect(url_for('children'))
+    
+    # Get letters
+    cur = db.execute('''
+        SELECT * FROM scheduled_letters 
+        WHERE child_id = ? AND user_id = ?
+        ORDER BY unlock_date ASC
+    ''', (child_id, user_id))
+    letters = cur.fetchall()
+    
+    return render_template('scheduled_letters.html',
+                          child={'id': child['id'] if isinstance(child, dict) else child[0],
+                                'name': child['name'] if isinstance(child, dict) else child[1]},
+                          letters=letters)
+
+
+@app.route('/child/<int:child_id>/letters/create', methods=['POST'])
+def create_scheduled_letter(child_id):
+    """Create a new scheduled letter."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    title = request.form.get('title', '').strip()
+    content = request.form.get('content', '').strip()
+    unlock_date = request.form.get('unlock_date', '')
+    unlock_occasion = request.form.get('unlock_occasion', '')
+    
+    if not title or not content or not unlock_date:
+        flash('Semua field wajib diisi.')
+        return redirect(url_for('scheduled_letters', child_id=child_id))
+    
+    db.execute('''
+        INSERT INTO scheduled_letters (child_id, user_id, title, content, unlock_date, unlock_occasion)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (child_id, user_id, title, content, unlock_date, unlock_occasion))
+    db.commit()
+    
+    flash('💌 Surat berhasil disimpan!')
+    return redirect(url_for('scheduled_letters', child_id=child_id))
+
+
+# ==================== HEALTH INSIGHTS ROUTES ====================
+
+@app.route('/child/<int:child_id>/insights')
+def health_insights(child_id):
+    """View health insights for a child."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    # Verify ownership
+    cur = db.execute('SELECT id, name, dob, gender FROM children WHERE id=? AND user_id=?', (child_id, user_id))
+    child = cur.fetchone()
+    if not child:
+        flash('Anak tidak ditemukan.')
+        return redirect(url_for('children'))
+    
+    # Get growth data for analysis
+    cur = db.execute('''
+        SELECT record_date, weight, height, head_circ 
+        FROM growth 
+        WHERE child_id = ? 
+        ORDER BY record_date DESC
+        LIMIT 10
+    ''', (child_id,))
+    growth_records = cur.fetchall()
+    
+    # Generate insights
+    insights = []
+    
+    if len(growth_records) >= 2:
+        latest = growth_records[0]
+        previous = growth_records[1]
+        
+        latest_weight = float(latest['weight'] if isinstance(latest, dict) else latest[1])
+        prev_weight = float(previous['weight'] if isinstance(previous, dict) else previous[1])
+        weight_change = latest_weight - prev_weight
+        
+        if weight_change > 0:
+            insights.append({
+                'type': 'positive',
+                'icon': '📈',
+                'title': 'Berat Badan Naik',
+                'message': f'Berat badan naik {weight_change:.1f} kg dari pengukuran sebelumnya.',
+                'suggestion': 'Pertahankan pola makan dan aktivitas saat ini.'
+            })
+        elif weight_change < 0:
+            insights.append({
+                'type': 'warning',
+                'icon': '📉',
+                'title': 'Berat Badan Turun',
+                'message': f'Berat badan turun {abs(weight_change):.1f} kg dari pengukuran sebelumnya.',
+                'suggestion': 'Pastikan asupan nutrisi mencukupi. Konsultasi dengan dokter jika berlanjut.'
+            })
+        
+        latest_height = float(latest['height'] if isinstance(latest, dict) else latest[2])
+        prev_height = float(previous['height'] if isinstance(previous, dict) else previous[2])
+        height_change = latest_height - prev_height
+        
+        if height_change > 0:
+            insights.append({
+                'type': 'positive',
+                'icon': '📏',
+                'title': 'Tinggi Badan Bertambah',
+                'message': f'Tinggi badan bertambah {height_change:.1f} cm.',
+                'suggestion': 'Pertumbuhan sesuai harapan!'
+            })
+    
+    # Add general tips
+    insights.append({
+        'type': 'info',
+        'icon': '💡',
+        'title': 'Tips Nutrisi',
+        'message': 'Berikan makanan bergizi seimbang dengan karbohidrat, protein, dan sayuran.',
+        'suggestion': 'ASI eksklusif hingga 6 bulan, lanjutkan MPASI yang bervariasi.'
+    })
+    
+    return render_template('health_insights.html',
+                          child={'id': child['id'] if isinstance(child, dict) else child[0],
+                                'name': child['name'] if isinstance(child, dict) else child[1]},
+                          insights=insights,
+                          growth_records=growth_records)
+
+
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1', port=5001)
-
-
