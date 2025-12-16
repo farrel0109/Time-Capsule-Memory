@@ -71,4 +71,26 @@
     </div>
     {% endif %}
 </div>
+
+{% block scripts %}
+<script>
+    // Add celebration when marking milestone as done
+    document.querySelectorAll('form[action*="toggle"]').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const button = this.querySelector('button');
+            const isMarkedDone = button.textContent.includes('Tandai Tercapai');
+            
+            if (isMarkedDone && typeof celebrate === 'function') {
+                // Trigger celebration before form submits
+                celebrate('milestone');
+                
+                // Small delay to show animation
+                e.preventDefault();
+                setTimeout(() => {
+                    this.submit();
+                }, 800);
+            }
+        });
+    });
+</script>
 {% endblock %}

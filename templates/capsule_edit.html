@@ -115,3 +115,22 @@
     </div>
 </div>
 {% endblock %}
+
+{% block scripts %}
+<script>
+    // Add celebration when sealing capsule
+    document.querySelector('form[action*="seal"]')?.addEventListener('submit', function(e) {
+        if (typeof celebrate === 'function') {
+            e.preventDefault();
+            celebrate('seal');
+            
+            // Show confirmation after animation
+            setTimeout(() => {
+                if (confirm('Yakin ingin menyegel kapsul ini? Setelah disegel, tidak bisa diedit lagi.')) {
+                    this.submit();
+                }
+            }, 1000);
+        }
+    });
+</script>
+{% endblock %}
