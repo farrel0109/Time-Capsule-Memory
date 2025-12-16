@@ -66,13 +66,22 @@
                 <div class="upload-preview" style="margin-bottom: var(--space-lg);">
                     {% for m in media %}
                     {% set m_url = m.file_url if m.file_url else m[3] %}
+                    {% set m_type = m.media_type if m.media_type else m[2] %}
                     {% set m_caption = m.caption if m.caption else m[5] %}
+                    {% if m_type == 'photo' %}
                     <div class="polaroid-card">
                         <img src="{{ m_url }}" alt="{{ m_caption }}" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm);">
                         {% if m_caption %}
                         <p class="text-sm text-center" style="margin-top: var(--space-xs);">{{ m_caption }}</p>
                         {% endif %}
                     </div>
+                    {% elif m_type == 'audio' %}
+                    <div class="audio-card" style="background: var(--color-mint); padding: var(--space-md); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 2rem;">🎙️</div>
+                        <p class="text-sm" style="margin: var(--space-xs) 0;">{{ m_caption or 'Rekaman Suara' }}</p>
+                        <audio controls src="{{ m_url }}" style="width: 100%; max-width: 200px;"></audio>
+                    </div>
+                    {% endif %}
                     {% endfor %}
                 </div>
                 {% endif %}
@@ -84,6 +93,15 @@
                         <input type="file" id="photoInput" name="photo" accept="image/*" style="display: none;" onchange="this.form.submit();">
                     </div>
                 </form>
+            </div>
+            
+            <!-- Audio Recording Section -->
+            <div style="margin-bottom: var(--space-xl);">
+                <h3><i class="bi bi-mic"></i> Rekam Suara Si Kecil</h3>
+                <p class="text-muted" style="margin-bottom: var(--space-md);">Abadikan tangisan pertama, tawa, atau kata-kata manis</p>
+                <a href="{{ url_for('capsule_audio', capsule_id=cap_id) }}" class="btn btn-outline-primary btn-lg" style="width: 100%;">
+                    <i class="bi bi-mic"></i> Buka Perekam Suara
+                </a>
             </div>
             
             <hr style="margin: var(--space-xl) 0; border: none; border-top: 2px dashed var(--color-peach);">

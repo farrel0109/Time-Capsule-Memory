@@ -17,7 +17,7 @@
     {% if milestones %}
     <div class="card mb-4">
         <div class="card-body">
-            <h5 class="card-title">Progress Perkembangan</h5>
+            <h5 class="card-title">🌟 Progress Perkembangan</h5>
             <div class="progress">
                 <div class="progress-bar bg-success" role="progressbar" style="width: {{ progress }}%;" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">
                     {{ progress }}%
@@ -34,7 +34,7 @@
                     <th>Milestone</th>
                     <th>Status</th>
                     <th>Catatan</th>
-                    <th>Aksi</th>
+                    <th style="min-width: 200px;">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -59,6 +59,15 @@
                                 {% endif %}
                             </button>
                         </form>
+                        {% if m['status'] == 'done' %}
+                        <button 
+                            class="btn btn-sm btn-outline-success ms-1"
+                            onclick="generateMilestoneCard('{{ child['name'] }}', '{{ m['milestone'] }}', '{{ m['noted'] or 'Hari ini' }}')"
+                            title="Buat kartu untuk dibagikan"
+                        >
+                            <i class="bi bi-card-image"></i> Buat Kartu
+                        </button>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -71,8 +80,15 @@
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block head %}
+<!-- html2canvas for card generation -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+{% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/milestone-card.js') }}"></script>
 <script>
     // Add celebration when marking milestone as done
     document.querySelectorAll('form[action*="toggle"]').forEach(form => {

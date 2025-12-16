@@ -772,6 +772,159 @@ def settings():
                           current_theme=current_theme)
 
 
+# ==================== AUDIO RECORDING ROUTES ====================
+
+@app.route('/capsule/<int:capsule_id>/audio', methods=['GET', 'POST'])
+def capsule_audio(capsule_id):
+    """Record audio for a time capsule."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    # Verify ownership and not sealed
+    cur = db.execute('''
+        SELECT tc.id, tc.is_sealed FROM time_capsules tc
+        JOIN children c ON tc.child_id = c.id
+        WHERE tc.id = ? AND c.user_id = ?
+    ''', (capsule_id, user_id))
+    capsule = cur.fetchone()
+    
+    if not capsule:
+        flash('Kapsul tidak ditemukan.')
+        return redirect(url_for('capsule_list'))
+    
+    is_sealed = capsule['is_sealed'] if isinstance(capsule, dict) else capsule[1]
+    if is_sealed:
+        flash('Kapsul sudah disegel, tidak bisa menambah rekaman.')
+        return redirect(url_for('capsule_view', capsule_id=capsule_id))
+    
+    if request.method == 'POST':
+        import os
+        import base64
+        from datetime import datetime
+        
+        audio_data = request.form.get('audio_data', '')
+        audio_title = request.form.get('audio_title', 'Rekaman')
+        
+        if audio_data and audio_data.startswith('data:audio'):
+            # Extract base64 data
+            header, encoded = audio_data.split(',', 1)
+            audio_bytes = base64.b64decode(encoded)
+            
+            # Create upload folder
+            upload_folder = os.path.join(os.path.dirname(__file__), 'static', 'uploads', 'audio')
+            os.makedirs(upload_folder, exist_ok=True)
+            
+            # Generate unique filename
+            unique_filename = f"audio_{capsule_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}.webm"
+            filepath = os.path.join(upload_folder, unique_filename)
+            
+            # Save file
+            with open(filepath, 'wb') as f:
+                f.write(audio_bytes)
+            
+            # Save to database
+            file_url = f"/static/uploads/audio/{unique_filename}"
+            
+            db.execute('''
+                INSERT INTO capsule_media (capsule_id, media_type, file_url, caption)
+                VALUES (?, 'audio', ?, ?)
+            ''', (capsule_id, file_url, audio_title))
+            db.commit()
+            
+            flash('🎙️ Rekaman suara berhasil ditambahkan!')
+            return redirect(url_for('capsule_view', capsule_id=capsule_id))
+        else:
+            flash('Tidak ada rekaman yang valid.')
+    
+    from datetime import date
+    return render_template('audio_recorder.html', 
+                          capsule_id=capsule_id,
+                          today=date.today().isoformat())
+
+
+# ==================== CALENDAR SYNC ROUTES ====================
+
+@app.route('/immunization/<int:child_id>/export.ics')
+def export_immunization_calendar(child_id):
+    """Export immunization schedule as iCalendar (.ics) file."""
+    db = get_db()
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
+    # Verify ownership
+    cur = db.execute('SELECT name, birth_date FROM children WHERE id=? AND user_id=?', (child_id, user_id))
+    child = cur.fetchone()
+    if not child:
+        flash('Anak tidak ditemukan.')
+        return redirect(url_for('children'))
+    
+    child_name = child['name'] if isinstance(child, dict) else child[0]
+    
+    # Get upcoming vaccinations (not completed)
+    cur = db.execute('''
+        SELECT vaccine_name, scheduled_date 
+        FROM vaccinations 
+        WHERE child_id = ? AND status != 'completed'
+        ORDER BY scheduled_date
+    ''', (child_id,))
+    vaccinations = cur.fetchall()
+    
+    # Generate iCalendar content
+    from datetime import datetime, timedelta
+    
+    ics_content = """BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//BabyGrow//Immunization Schedule//ID
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Jadwal Imunisasi - {child_name}
+""".format(child_name=child_name)
+    
+    for vacc in vaccinations:
+        vaccine_name = vacc['vaccine_name'] if isinstance(vacc, dict) else vacc[0]
+        scheduled_date = vacc['scheduled_date'] if isinstance(vacc, dict) else vacc[1]
+        
+        # Parse date
+        if isinstance(scheduled_date, str):
+            date_obj = datetime.strptime(scheduled_date, '%Y-%m-%d')
+        else:
+            date_obj = scheduled_date
+        
+        # Create reminder 3 days before
+        reminder_date = date_obj - timedelta(days=3)
+        
+        uid = f"babygrow-vacc-{child_id}-{vaccine_name.replace(' ', '')}"
+        dtstart = date_obj.strftime('%Y%m%d')
+        dtstamp = datetime.now().strftime('%Y%m%dT%H%M%SZ')
+        
+        ics_content += f"""BEGIN:VEVENT
+UID:{uid}@babygrow.app
+DTSTAMP:{dtstamp}
+DTSTART;VALUE=DATE:{dtstart}
+SUMMARY:💉 Imunisasi {vaccine_name} - {child_name}
+DESCRIPTION:Jadwal imunisasi {vaccine_name} untuk {child_name}. Jangan lupa bawa buku KIA!
+LOCATION:Puskesmas/Rumah Sakit
+BEGIN:VALARM
+TRIGGER:-P3D
+ACTION:DISPLAY
+DESCRIPTION:Pengingat: Imunisasi {vaccine_name} 3 hari lagi!
+END:VALARM
+END:VEVENT
+"""
+    
+    ics_content += "END:VCALENDAR"
+    
+    # Return as downloadable file
+    from flask import Response
+    response = Response(ics_content, mimetype='text/calendar')
+    response.headers['Content-Disposition'] = f'attachment; filename=imunisasi-{child_name.replace(" ", "_")}.ics'
+    return response
+
+
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1', port=5001)
+
 
