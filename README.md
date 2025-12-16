@@ -2,30 +2,47 @@
 
 Aplikasi web untuk memantau kesehatan dan perkembangan balita dengan fitur **Time Capsule** - menyimpan kenangan untuk si kecil di masa depan.
 
-![BabyGrow](https://img.shields.io/badge/version-1.0.0--MVP-brightgreen)
+![BabyGrow](https://img.shields.io/badge/version-2.0.0-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.8+-blue)
 ![Flask](https://img.shields.io/badge/flask-2.0+-lightgrey)
+![PWA](https://img.shields.io/badge/PWA-enabled-orange)
 
-## ✨ Fitur Utama
+## ✨ Fitur Lengkap
 
 ### 📊 Monitoring Kesehatan
 
-- **Pertumbuhan** - Catat berat, tinggi, lingkar kepala dengan grafik perkembangan
-- **Milestone** - Track perkembangan motorik, bahasa, sosial, kognitif
-- **Imunisasi** - Jadwal vaksinasi lengkap sesuai standar Indonesia
+| Fitur                 | Deskripsi                                               |
+| --------------------- | ------------------------------------------------------- |
+| **WHO Growth Chart**  | Grafik pertumbuhan dengan zona z-score (normal/warning) |
+| **Milestone Tracker** | Track perkembangan motorik, bahasa, sosial              |
+| **Imunisasi**         | Jadwal vaksinasi + ekspor ke Google Calendar            |
+| **Health Insights**   | Analisis tren & saran nutrisi otomatis                  |
 
 ### 💌 Time Capsule (Fitur Unggulan)
 
-- Tulis surat cinta untuk anak di masa depan
-- Upload foto kenangan
-- Segel kapsul dengan tanggal buka yang ditentukan
-- Countdown timer hingga waktu pembukaan
-- Animasi celebrasi saat kapsul dibuka
+- ✍️ Tulis surat cinta untuk anak di masa depan
+- 📸 Upload foto & rekam audio kenangan
+- 🔒 Segel kapsul dengan tanggal buka
+- ⏳ Countdown timer hingga pembukaan
+- 🎉 Animasi celebrasi saat dibuka
+
+### 🆕 Fitur Baru v2.0
+
+| Fitur                        | Icon | Deskripsi                            |
+| ---------------------------- | ---- | ------------------------------------ |
+| **Milestone Card Generator** | 🎨   | Buat kartu shareable untuk milestone |
+| **Audio Recorder**           | 🎙️   | Rekam suara bayi dengan waveform     |
+| **Calendar Sync**            | 📅   | Ekspor jadwal imunisasi ke .ics      |
+| **Multi-Parent Access**      | 👨‍👩‍👧   | Undang keluarga (viewer/editor)      |
+| **Scheduled Letters**        | 💌   | Surat terjadwal untuk masa depan     |
+| **Health Insights**          | 🧠   | Analisis pertumbuhan otomatis        |
+| **PWA Support**              | 📱   | Install ke homescreen + offline      |
+| **Celebrations**             | 🎊   | Confetti saat milestone/capsule      |
 
 ### 🎨 Desain Premium
 
-- Tema warna pastel yang dapat dipilih (Peach, Pink, Lavender, Mint)
-- UI/UX yang soft, warm, dan memorable
+- Tema warna pastel (Peach, Pink, Lavender, Mint)
+- UI/UX soft, warm, dan memorable
 - Animasi halus dan micro-interactions
 - Fully responsive untuk mobile
 
@@ -40,8 +57,8 @@ Aplikasi web untuk memantau kesehatan dan perkembangan balita dengan fitur **Tim
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/sistem-monitoring-balita.git
-cd sistem-monitoring-balita
+git clone https://github.com/farrel0109/Time-Capsule-Memory.git
+cd Time-Capsule-Memory
 
 # Buat virtual environment
 python -m venv .venv
@@ -55,54 +72,48 @@ source .venv/bin/activate
 # Install dependencies
 pip install flask python-dotenv werkzeug pillow
 
-# (Opsional) Jalankan seed untuk data dummy
+# Jalankan seed untuk data dummy
 python seed.py
 
 # Jalankan aplikasi
 python app.py
 ```
 
-Aplikasi akan berjalan di `http://127.0.0.1:5001`
+Aplikasi berjalan di `http://127.0.0.1:5001`
 
-### Akun Demo
+### 🔐 Akun Demo
 
-- **Username:** `ibu_sarah`
-- **Password:** `password123`
+| Field    | Value         |
+| -------- | ------------- |
+| Username | `ibu_sarah`   |
+| Password | `password123` |
 
 ## 📁 Struktur Folder
 
 ```
 sistem-monitoring-balita/
-├── app.py              # Aplikasi Flask utama
-├── db.py               # Database connection & schema
-├── seed.py             # Script data dummy
-├── run.py              # Entry point alternatif
-├── database/           # SQLite database
+├── app.py                 # Aplikasi Flask utama
+├── db.py                  # Database connection & schema
+├── seed.py                # Script data dummy (updated!)
+├── database/
 │   └── balita.db
 ├── static/
-│   ├── css/
-│   │   └── style.css   # Design system
-│   └── uploads/        # User uploads
+│   ├── css/style.css      # Design system
+│   ├── js/
+│   │   ├── celebrations.js    # Confetti & badges
+│   │   ├── milestone-card.js  # Card generator
+│   │   ├── audio-recorder.js  # Audio recorder
+│   │   └── sw.js              # Service Worker
+│   ├── manifest.json      # PWA manifest
+│   └── icons/             # PWA icons
 ├── templates/
-│   ├── base.html       # Base layout
-│   ├── login.html
-│   ├── register.html
-│   ├── index.html      # Dashboard
-│   ├── children.html
-│   ├── add_child.html
-│   ├── edit_child.html
-│   ├── growth.html
-│   ├── add_growth.html
-│   ├── milestone.html
-│   ├── add_milestone.html
-│   ├── immunization.html
-│   ├── add_immunization.html
-│   ├── capsule_list.html
-│   ├── capsule_create.html
-│   ├── capsule_edit.html
-│   ├── capsule_sealed.html
-│   ├── capsule_opened.html
-│   └── settings.html
+│   ├── base.html
+│   ├── landing.html       # Landing page (new!)
+│   ├── family_access.html # Multi-parent (new!)
+│   ├── scheduled_letters.html # Letters (new!)
+│   ├── health_insights.html   # Insights (new!)
+│   ├── audio_recorder.html    # Audio (new!)
+│   └── ... (other templates)
 └── requirements.txt
 ```
 
@@ -119,58 +130,65 @@ sistem-monitoring-balita/
 
 ## 📝 API Routes
 
-| Route                             | Method    | Deskripsi           |
-| --------------------------------- | --------- | ------------------- |
-| `/`                               | GET       | Dashboard           |
-| `/login`                          | GET, POST | Login               |
-| `/register`                       | GET, POST | Registrasi          |
-| `/logout`                         | GET       | Logout              |
-| `/children`                       | GET       | Daftar anak         |
-| `/children/add`                   | GET, POST | Tambah anak         |
-| `/children/<id>/edit`             | GET, POST | Edit anak           |
-| `/children/<id>/delete`           | POST      | Hapus anak          |
-| `/children/<id>/growth`           | GET       | Daftar pertumbuhan  |
-| `/children/<id>/growth/add`       | GET, POST | Tambah pertumbuhan  |
-| `/children/<id>/milestone`        | GET       | Daftar milestone    |
-| `/children/<id>/milestone/add`    | GET, POST | Tambah milestone    |
-| `/children/<id>/immunization`     | GET       | Daftar imunisasi    |
-| `/children/<id>/immunization/add` | GET, POST | Tambah imunisasi    |
-| `/capsule`                        | GET       | Daftar kapsul waktu |
-| `/capsule/new`                    | GET, POST | Buat kapsul baru    |
-| `/capsule/<id>`                   | GET       | Lihat kapsul        |
-| `/capsule/<id>/seal`              | POST      | Segel kapsul        |
-| `/capsule/<id>/open`              | POST      | Buka kapsul         |
-| `/capsule/<id>/upload`            | POST      | Upload foto         |
-| `/settings`                       | GET, POST | Pengaturan          |
+### Core Routes
+
+| Route        | Method    | Deskripsi                  |
+| ------------ | --------- | -------------------------- |
+| `/`          | GET       | Landing page               |
+| `/dashboard` | GET       | Dashboard (login required) |
+| `/login`     | GET, POST | Login                      |
+| `/register`  | GET, POST | Registrasi                 |
+
+### Child Management
+
+| Route                         | Method | Deskripsi   |
+| ----------------------------- | ------ | ----------- |
+| `/children`                   | GET    | Daftar anak |
+| `/children/<id>/growth`       | GET    | Pertumbuhan |
+| `/children/<id>/milestone`    | GET    | Milestone   |
+| `/children/<id>/immunization` | GET    | Imunisasi   |
+
+### Time Capsule
+
+| Route                 | Method    | Deskripsi     |
+| --------------------- | --------- | ------------- |
+| `/capsule`            | GET       | Daftar kapsul |
+| `/capsule/<id>/audio` | GET, POST | Rekam audio   |
+| `/capsule/<id>/seal`  | POST      | Segel kapsul  |
+
+### Phase 3 Features
+
+| Route                           | Method | Deskripsi             |
+| ------------------------------- | ------ | --------------------- |
+| `/child/<id>/family`            | GET    | Kelola akses keluarga |
+| `/child/<id>/invite`            | POST   | Kirim undangan        |
+| `/child/<id>/letters`           | GET    | Surat terjadwal       |
+| `/child/<id>/insights`          | GET    | Health insights       |
+| `/immunization/<id>/export.ics` | GET    | Ekspor kalender       |
 
 ## 🔧 Konfigurasi
 
-Buat file `.env` untuk konfigurasi:
+Buat file `.env`:
 
 ```env
 FLASK_SECRET=your-secret-key-here
 DB_TYPE=sqlite
 ```
 
-Untuk MySQL (opsional):
-
-```env
-DB_TYPE=mysql
-MYSQL_HOST=localhost
-MYSQL_PORT=3306
-MYSQL_USER=root
-MYSQL_PASSWORD=password
-MYSQL_DB=balita_db
-```
-
 ## 📜 License
 
-MIT License - Bebas digunakan untuk proyek pribadi dan komersial.
+MIT License - Bebas digunakan.
 
 ## 🤝 Kontribusi
 
-Kontribusi selalu welcome! Silakan buat Pull Request atau open Issue untuk saran dan bug report.
+Kontribusi welcome! Buat Pull Request atau open Issue.
 
 ---
 
 Made with 💕 for Indonesian parents
+
+**Features Implemented:**
+
+- ✅ Phase 1: Growth Charts, Celebrations, PWA
+- ✅ Phase 2: Milestone Cards, Audio Recorder, Calendar
+- ✅ Phase 3: Family Access, Scheduled Letters, Health Insights

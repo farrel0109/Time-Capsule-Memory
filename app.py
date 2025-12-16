@@ -1,10 +1,27 @@
 from flask import Flask, render_template, request, redirect, url_for, session, g, flash
 import os
+from datetime import datetime
 from db import get_db, init_db, close_connection
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET', 'dev-secret')
 app.teardown_appcontext(close_connection)
+
+# Custom Jinja filter for calculating days until a date
+@app.template_filter('days_until')
+def days_until_filter(date_str):
+    """Calculate days until a date string."""
+    if not date_str:
+        return 0
+    try:
+        if isinstance(date_str, str):
+            target = datetime.strptime(date_str, '%Y-%m-%d')
+        else:
+            target = date_str
+        delta = target - datetime.now()
+        return max(0, delta.days)
+    except:
+        return 0
 
 # Initialize the database inside an application context
 with app.app_context():
@@ -211,7 +228,9 @@ def growth_list(child_id):
     
     # Get growth records
     cur = db.execute('SELECT id,record_date,weight,height,head_circ FROM growth WHERE child_id=? ORDER BY record_date DESC', (child_id,))
-    records = cur.fetchall()
+    rows = cur.fetchall()
+    # Convert Row objects to dicts for JSON serialization
+    records = [dict(row) if hasattr(row, 'keys') else {'id': row[0], 'record_date': row[1], 'weight': row[2], 'height': row[3], 'head_circ': row[4]} for row in rows]
     return render_template('growth_list.html', child=child, records=records)
 
 @app.route('/children/<int:child_id>/growth/add', methods=['GET','POST'])
