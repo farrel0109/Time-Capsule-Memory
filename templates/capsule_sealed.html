@@ -108,5 +108,18 @@ function updateCountdown() {
 
 updateCountdown();
 setInterval(updateCountdown, 1000);
+
+// Celebration when opening capsule
+{% if can_open %}
+document.querySelector('form[action*="open"]')?.addEventListener('submit', function(e) {
+    if (typeof celebrate === 'function') {
+        e.preventDefault();
+        celebrate('open');
+        setTimeout(() => {
+            this.submit();
+        }, 1500);
+    }
+});
+{% endif %}
 </script>
 {% endblock %}

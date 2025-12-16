@@ -19,7 +19,7 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Grafik Berat Badan</h5>
+                    <h5 class="card-title">📊 Grafik Berat Badan</h5>
                     <canvas id="weightChart"></canvas>
                 </div>
             </div>
@@ -27,8 +27,29 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Grafik Tinggi Badan</h5>
+                    <h5 class="card-title">📏 Grafik Tinggi Badan</h5>
                     <canvas id="heightChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- WHO Status Legend -->
+    <div class="card mb-4" style="background: linear-gradient(135deg, var(--color-peach) 0%, var(--color-cloud) 100%);">
+        <div class="card-body">
+            <h6 class="card-title" style="margin-bottom: var(--space-md);">📋 Keterangan Zona Pertumbuhan (Standar WHO)</h6>
+            <div style="display: flex; flex-wrap: wrap; gap: var(--space-lg);">
+                <div style="display: flex; align-items: center; gap: var(--space-sm);">
+                    <span style="width: 20px; height: 20px; background: rgba(181, 234, 215, 0.5); border-radius: 4px;"></span>
+                    <span style="font-size: 0.875rem;"><strong>Hijau:</strong> Normal (±10% rata-rata)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: var(--space-sm);">
+                    <span style="width: 20px; height: 20px; background: rgba(255, 209, 102, 0.4); border-radius: 4px;"></span>
+                    <span style="font-size: 0.875rem;"><strong>Kuning:</strong> Perlu Perhatian (±10-20%)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: var(--space-sm);">
+                    <span style="width: 20px; height: 20px; background: rgba(239, 118, 122, 0.3); border-radius: 4px;"></span>
+                    <span style="font-size: 0.875rem;"><strong>Merah:</strong> Konsultasi Dokter</span>
                 </div>
             </div>
         </div>
@@ -66,6 +87,7 @@
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 <script>
     {% if records %}
     // Prepare data for charts
@@ -74,7 +96,89 @@
     const weights = records.map(r => parseFloat(r['weight'])).reverse();
     const heights = records.map(r => parseFloat(r['height'])).reverse();
     
-    // Weight Chart
+    // Calculate average and ranges for WHO-style bands
+    const avgWeight = weights.reduce((a, b) => a + b, 0) / weights.length;
+    const avgHeight = heights.reduce((a, b) => a + b, 0) / heights.length;
+    
+    // Common chart options with WHO-style zones
+    const createChartOptions = (label, unit, avgValue, color) => ({
+        responsive: true,
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                    usePointStyle: true,
+                    font: { family: 'Quicksand', weight: '600' }
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(93, 78, 55, 0.9)',
+                titleFont: { family: 'Quicksand', weight: '600' },
+                bodyFont: { family: 'Inter' },
+                padding: 12,
+                cornerRadius: 8
+            },
+            annotation: {
+                annotations: {
+                    normalZone: {
+                        type: 'box',
+                        yMin: avgValue * 0.9,
+                        yMax: avgValue * 1.1,
+                        backgroundColor: 'rgba(181, 234, 215, 0.3)',
+                        borderWidth: 0,
+                        label: {
+                            display: true,
+                            content: '✓ Normal',
+                            position: 'end',
+                            font: { size: 10 }
+                        }
+                    },
+                    warningLow: {
+                        type: 'box',
+                        yMin: avgValue * 0.8,
+                        yMax: avgValue * 0.9,
+                        backgroundColor: 'rgba(255, 209, 102, 0.2)',
+                        borderWidth: 0
+                    },
+                    warningHigh: {
+                        type: 'box',
+                        yMin: avgValue * 1.1,
+                        yMax: avgValue * 1.2,
+                        backgroundColor: 'rgba(255, 209, 102, 0.2)',
+                        borderWidth: 0
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: false,
+                title: {
+                    display: true,
+                    text: `${label} (${unit})`,
+                    font: { family: 'Quicksand', weight: '600' }
+                },
+                grid: {
+                    color: 'rgba(93, 78, 55, 0.1)'
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                },
+                ticks: {
+                    font: { family: 'Inter', size: 11 }
+                }
+            }
+        }
+    });
+    
+    // Weight Chart with WHO zones
     const weightCtx = document.getElementById('weightChart').getContext('2d');
     const weightChart = new Chart(weightCtx, {
         type: 'line',
@@ -83,35 +187,21 @@
             datasets: [{
                 label: 'Berat Badan (kg)',
                 data: weights,
-                borderColor: '#FF6B9D',
-                backgroundColor: 'rgba(255, 107, 157, 0.1)',
+                borderColor: '#FCB9B2',
+                backgroundColor: 'rgba(252, 185, 178, 0.2)',
                 tension: 0.4,
                 fill: true,
-                pointRadius: 5,
-                pointBackgroundColor: '#FF6B9D'
+                pointRadius: 6,
+                pointBackgroundColor: '#FCB9B2',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointHoverRadius: 8
             }]
         },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    title: {
-                        display: true,
-                        text: 'Berat (kg)'
-                    }
-                }
-            }
-        }
+        options: createChartOptions('Berat', 'kg', avgWeight, '#FCB9B2')
     });
     
-    // Height Chart
+    // Height Chart with WHO zones
     const heightCtx = document.getElementById('heightChart').getContext('2d');
     const heightChart = new Chart(heightCtx, {
         type: 'line',
@@ -120,32 +210,18 @@
             datasets: [{
                 label: 'Tinggi Badan (cm)',
                 data: heights,
-                borderColor: '#4ECDC4',
-                backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                borderColor: '#B8B8DC',
+                backgroundColor: 'rgba(184, 184, 220, 0.2)',
                 tension: 0.4,
                 fill: true,
-                pointRadius: 5,
-                pointBackgroundColor: '#4ECDC4'
+                pointRadius: 6,
+                pointBackgroundColor: '#B8B8DC',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointHoverRadius: 8
             }]
         },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    title: {
-                        display: true,
-                        text: 'Tinggi (cm)'
-                    }
-                }
-            }
-        }
+        options: createChartOptions('Tinggi', 'cm', avgHeight, '#B8B8DC')
     });
     {% endif %}
 </script>
