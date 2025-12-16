@@ -199,6 +199,48 @@ def init_db():
         )
     """)
 
+    # Family Access - Multi-parent sharing
+    exec_sql(f"""
+        CREATE TABLE IF NOT EXISTS family_access (
+            id {pk},
+            child_id INTEGER NOT NULL,
+            user_id INTEGER,
+            invite_code TEXT UNIQUE,
+            invite_email TEXT,
+            role TEXT DEFAULT 'viewer',
+            status TEXT DEFAULT 'pending',
+            invited_by INTEGER NOT NULL,
+            accepted_at TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # Scheduled Letters - Time Capsule upgrade
+    exec_sql(f"""
+        CREATE TABLE IF NOT EXISTS scheduled_letters (
+            id {pk},
+            child_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            content TEXT,
+            unlock_date TEXT NOT NULL,
+            unlock_occasion TEXT,
+            is_sent INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # Health Insights Cache
+    exec_sql(f"""
+        CREATE TABLE IF NOT EXISTS health_insights (
+            id {pk},
+            child_id INTEGER NOT NULL,
+            insight_type TEXT NOT NULL,
+            insight_data TEXT,
+            generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
     try:
         db.commit()
     except Exception:

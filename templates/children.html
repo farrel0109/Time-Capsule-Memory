@@ -56,9 +56,20 @@
                 <a href="{{ url_for('immunization_list', child_id=child.id if child.id else child[0]) }}" class="btn btn-success btn-sm">
                     💉 Imunisasi
                 </a>
-                <a href="{{ url_for('edit_child', child_id=child.id if child.id else child[0]) }}" class="btn btn-ghost btn-sm">
-                    <i class="bi bi-pencil"></i> Edit
-                </a>
+                <div style="display: flex; gap: var(--space-xs); flex-wrap: wrap; margin-top: var(--space-xs);">
+                    <a href="{{ url_for('health_insights', child_id=child.id if child.id else child[0]) }}" class="btn btn-ghost btn-sm" title="Health Insights">
+                        🧠
+                    </a>
+                    <a href="{{ url_for('scheduled_letters', child_id=child.id if child.id else child[0]) }}" class="btn btn-ghost btn-sm" title="Surat Terjadwal">
+                        💌
+                    </a>
+                    <a href="{{ url_for('family_access', child_id=child.id if child.id else child[0]) }}" class="btn btn-ghost btn-sm" title="Akses Keluarga">
+                        👨‍👩‍👧
+                    </a>
+                    <a href="{{ url_for('edit_child', child_id=child.id if child.id else child[0]) }}" class="btn btn-ghost btn-sm" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                </div>
             </div>
         </div>
         {% endfor %}

@@ -6,9 +6,12 @@
 <div class="container mt-4">
     <div class="row mb-4">
         <div class="col-md-6">
-            <h2>Data Imunisasi - {{ child['name'] }}</h2>
+            <h2>💉 Data Imunisasi - {{ child['name'] }}</h2>
         </div>
         <div class="col-md-6 text-end">
+            <a href="{{ url_for('export_immunization_calendar', child_id=child['id']) }}" class="btn btn-outline-primary" title="Sinkronkan ke Google Calendar">
+                <i class="bi bi-calendar-plus"></i> Ekspor ke Kalender
+            </a>
             <a href="{{ url_for('add_immunization', child_id=child['id']) }}" class="btn btn-success">+ Tambah Vaksinasi</a>
             <a href="{{ url_for('children') }}" class="btn btn-secondary">Kembali</a>
         </div>
