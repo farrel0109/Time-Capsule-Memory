@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}🎙️ Rekam Suara - Kapsul Waktu{% endblock %}
+
+{% block content %}
+<div class="container animate-fadeIn">
+    <div style="max-width: 600px; margin: 0 auto;">
+        <a href="{{ url_for('capsule_view', capsule_id=capsule_id) }}" class="text-muted" style="display: inline-flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-md);">
+            <i class="bi bi-arrow-left"></i> Kembali ke Kapsul
+        </a>
+        
+        <div class="card" style="padding: var(--space-xl);">
+            <div style="text-align: center; margin-bottom: var(--space-xl);">
+                <div style="font-size: 4rem; margin-bottom: var(--space-sm);">🎙️</div>
+                <h2>Rekam Suara Si Kecil</h2>
+                <p class="text-muted">Abadikan tangisan pertama, tawa, atau kata-kata manis si kecil</p>
+            </div>
+            
+            <!-- Audio Recorder Container -->
+            <div class="audio-recorder-wrapper" style="
+                background: linear-gradient(135deg, var(--color-peach) 0%, var(--color-cloud) 100%);
+                border-radius: var(--radius-lg);
+                padding: var(--space-xl);
+                margin-bottom: var(--space-xl);
+            ">
+                <canvas id="audio-waveform" width="400" height="100" style="
+                    width: 100%;
+                    border-radius: var(--radius-md);
+                    margin-bottom: var(--space-lg);
+                    box-shadow: var(--shadow-soft);
+                "></canvas>
+                
+                <div id="recording-status" style="
+                    text-align: center;
+                    font-size: 0.875rem;
+                    color: var(--color-text-muted);
+                    margin-bottom: var(--space-lg);
+                ">Klik tombol untuk mulai merekam</div>
+                
+                <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
+                    <button id="record-btn" class="btn btn-primary btn-lg" onclick="toggleRecording()">
+                        <i class="bi bi-mic"></i> Mulai Rekam
+                    </button>
+                    <button id="play-btn" class="btn btn-secondary btn-lg" style="display: none;" onclick="playRecording()">
+                        <i class="bi bi-play"></i> Putar
+                    </button>
+                </div>
+                
+                <audio id="audio-preview" style="display: none;"></audio>
+            </div>
+            
+            <!-- Save Form -->
+            <form id="save-form" method="POST" enctype="multipart/form-data" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">Beri Judul Rekaman</label>
+                    <input type="text" name="audio_title" class="form-input" placeholder="misal: Tawa Pertama, Kata 'Mama'" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Tanggal Rekaman</label>
+                    <input type="date" name="recording_date" class="form-input" value="{{ today }}">
+                </div>
+                
+                <input type="hidden" name="audio_data" id="audio-data-input">
+                
+                <button type="submit" class="btn btn-success btn-lg" style="width: 100%;">
+                    <i class="bi bi-save"></i> Simpan ke Kapsul Waktu
+                </button>
+            </form>
+        </div>
+        
+        <!-- Tips -->
+        <div class="card" style="margin-top: var(--space-lg); padding: var(--space-lg); background: var(--color-mint);">
+            <h5 style="margin-bottom: var(--space-sm);">💡 Tips Merekam</h5>
+            <ul style="margin: 0; padding-left: var(--space-lg); color: var(--color-text-muted);">
+                <li>Pastikan ruangan tenang</li>
+                <li>Dekatkan HP ke sumber suara</li>
+                <li>Rekaman ideal: 10-30 detik</li>
+                <li>Coba rekam saat bayi sedang "mengobrol"</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/audio-recorder.js') }}"></script>
+<script>
+let recordedBlob = null;
+
+async function toggleRecording() {
+    const btn = document.getElementById('record-btn');
+    const status = document.getElementById('recording-status');
+    const canvas = document.getElementById('audio-waveform');
+    const playBtn = document.getElementById('play-btn');
+    const saveForm = document.getElementById('save-form');
+    
+    try {
+        if (!window.BabyGrowRecorder.isRecording) {
+            // Start recording
+            if (!window.BabyGrowRecorder.mediaRecorder) {
+                await window.BabyGrowRecorder.init();
+            }
+            
+            window.BabyGrowRecorder.start(canvas);
+            btn.innerHTML = '<i class="bi bi-stop-fill"></i> Berhenti';
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-danger');
+            status.innerHTML = '<span style="color: #e74c3c;">● </span> Sedang merekam...';
+            playBtn.style.display = 'none';
+            saveForm.style.display = 'none';
+        } else {
+            // Stop recording
+            recordedBlob = await window.BabyGrowRecorder.stop();
+            
+            btn.innerHTML = '<i class="bi bi-mic"></i> Rekam Ulang';
+            btn.classList.remove('btn-danger');
+            btn.classList.add('btn-primary');
+            status.textContent = '✅ Rekaman selesai! (' + formatDuration(recordedBlob.size) + ')';
+            playBtn.style.display = 'inline-flex';
+            saveForm.style.display = 'block';
+            
+            // Draw static waveform
+            AudioRecorder.drawStaticWaveform(canvas, recordedBlob);
+            
+            // Setup audio preview
+            const audio = document.getElementById('audio-preview');
+            audio.src = URL.createObjectURL(recordedBlob);
+            
+            // Convert blob to base64 for form submission
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                document.getElementById('audio-data-input').value = reader.result;
+            };
+            reader.readAsDataURL(recordedBlob);
+        }
+    } catch (error) {
+        status.textContent = '❌ ' + error.message;
+        alert('Tidak bisa mengakses mikrofon. Pastikan izin sudah diberikan.');
+        console.error(error);
+    }
+}
+
+function playRecording() {
+    const audio = document.getElementById('audio-preview');
+    const playBtn = document.getElementById('play-btn');
+    
+    if (audio.paused) {
+        audio.play();
+        playBtn.innerHTML = '<i class="bi bi-pause"></i> Pause';
+    } else {
+        audio.pause();
+        playBtn.innerHTML = '<i class="bi bi-play"></i> Putar';
+    }
+    
+    audio.onended = () => {
+        playBtn.innerHTML = '<i class="bi bi-play"></i> Putar';
+    };
+}
+
+function formatDuration(bytes) {
+    // Rough estimate: ~16KB per second for webm audio
+    const seconds = Math.round(bytes / 16000);
+    return seconds + ' detik';
+}
+</script>
+{% endblock %}

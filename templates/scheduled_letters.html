@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}💌 Surat Terjadwal - {{ child.name }}{% endblock %}
+
+{% block content %}
+<div class="container animate-fadeIn">
+    <div style="max-width: 700px; margin: 0 auto;">
+        <a href="{{ url_for('children') }}" class="text-muted" style="display: inline-flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-md);">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
+        
+        <div class="card" style="padding: var(--space-xl); margin-bottom: var(--space-lg);">
+            <div style="text-align: center; margin-bottom: var(--space-xl);">
+                <div style="font-size: 4rem; margin-bottom: var(--space-sm);">💌</div>
+                <h2>Surat Terjadwal</h2>
+                <p class="text-muted">Tulis surat untuk {{ child.name }} yang akan dibuka di masa depan</p>
+            </div>
+            
+            <!-- Create New Letter -->
+            <form method="POST" action="{{ url_for('create_scheduled_letter', child_id=child.id) }}">
+                <div class="form-group">
+                    <label class="form-label">Judul Surat</label>
+                    <input type="text" name="title" class="form-input" placeholder="misal: Untuk Ulang Tahun ke-5" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Isi Surat</label>
+                    <textarea name="content" class="form-textarea" rows="8" placeholder="Sayang, ketika kamu membaca ini..." required></textarea>
+                </div>
+                
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Tanggal Dibuka</label>
+                        <input type="date" name="unlock_date" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Momen Spesial</label>
+                        <select name="unlock_occasion" class="form-input">
+                            <option value="">Pilih momen...</option>
+                            <option value="Ulang Tahun ke-5">Ulang Tahun ke-5</option>
+                            <option value="Ulang Tahun ke-10">Ulang Tahun ke-10</option>
+                            <option value="Ulang Tahun ke-17">Ulang Tahun ke-17</option>
+                            <option value="Wisuda SD">Wisuda SD</option>
+                            <option value="Wisuda SMP">Wisuda SMP</option>
+                            <option value="Wisuda SMA">Wisuda SMA</option>
+                            <option value="Hari Pertama Sekolah">Hari Pertama Sekolah</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                    <i class="bi bi-envelope-heart"></i> Simpan Surat
+                </button>
+            </form>
+        </div>
+        
+        <!-- Existing Letters -->
+        <div class="card" style="padding: var(--space-lg);">
+            <h4 style="margin-bottom: var(--space-md);">📬 Surat yang Tersimpan</h4>
+            
+            {% if letters %}
+            <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+                {% for letter in letters %}
+                <div class="letter-card" style="
+                    padding: var(--space-lg);
+                    background: linear-gradient(135deg, var(--color-peach) 0%, var(--color-cloud) 100%);
+                    border-radius: var(--radius-md);
+                    position: relative;
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h5 style="margin: 0 0 var(--space-xs) 0;">{{ letter.title }}</h5>
+                            <p class="text-sm text-muted" style="margin: 0;">
+                                🗓️ Dibuka: {{ letter.unlock_date }}
+                                {% if letter.unlock_occasion %}
+                                • 🎉 {{ letter.unlock_occasion }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <span class="badge badge-info">📨 Tersimpan</span>
+                    </div>
+                    
+                    <div style="margin-top: var(--space-md); padding: var(--space-md); background: rgba(255,255,255,0.7); border-radius: var(--radius-sm);">
+                        <p class="text-sm" style="margin: 0; color: var(--color-text-muted); font-style: italic;">
+                            "{{ letter.content[:100] }}{% if letter.content|length > 100 %}...{% endif %}"
+                        </p>
+                    </div>
+                    
+                    {% set days_left = (letter.unlock_date | days_until) %}
+                    <div style="margin-top: var(--space-sm); text-align: right;">
+                        <span class="text-sm text-muted">
+                            ⏳ {{ days_left }} hari lagi
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: var(--space-xl); color: var(--color-text-muted);">
+                <div style="font-size: 3rem; margin-bottom: var(--space-md);">✉️</div>
+                <p>Belum ada surat terjadwal.</p>
+                <p class="text-sm">Tulis surat pertamamu untuk {{ child.name }}!</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Tips -->
+        <div class="card" style="margin-top: var(--space-lg); padding: var(--space-lg); background: var(--color-lavender);">
+            <h5 style="margin-bottom: var(--space-sm);">💡 Ide Surat</h5>
+            <ul style="margin: 0; padding-left: var(--space-lg); color: var(--color-text-muted);">
+                <li>Ceritakan perasaanmu saat pertama kali menggendongnya</li>
+                <li>Harapan dan doa untuk masa depannya</li>
+                <li>Momen lucu yang terjadi minggu ini</li>
+                <li>Nasihat yang ingin kamu sampaikan</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
