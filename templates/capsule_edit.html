@@ -111,9 +111,8 @@
                 <p class="text-muted" style="margin-bottom: var(--space-md);">
                     Setelah disegel, kapsul tidak bisa diedit dan hanya bisa dibuka pada tanggal <strong>{{ cap_unlock }}</strong>
                 </p>
-                <form method="POST" action="{{ url_for('capsule_seal', capsule_id=cap_id) }}" 
-                      onsubmit="return confirm('Yakin ingin menyegel kapsul ini? Setelah disegel, tidak bisa diedit lagi.');">
-                    <button type="submit" class="btn btn-primary btn-lg">
+                <form id="seal-form" method="POST" action="{{ url_for('capsule_seal', capsule_id=cap_id) }}">
+                    <button type="button" id="seal-btn" class="btn btn-primary btn-lg">
                         <i class="bi bi-lock"></i> Segel Kapsul Sekarang
                     </button>
                 </form>
@@ -136,19 +135,19 @@
 
 {% block scripts %}
 <script>
-    // Add celebration when sealing capsule
-    document.querySelector('form[action*="seal"]')?.addEventListener('submit', function(e) {
-        if (typeof celebrate === 'function') {
-            e.preventDefault();
-            celebrate('seal');
-            
-            // Show confirmation after animation
+    // Seal button with celebration
+    document.getElementById('seal-btn')?.addEventListener('click', function() {
+        if (confirm('Yakin ingin menyegel kapsul ini? Setelah disegel, tidak bisa diedit lagi.')) {
+            // Trigger celebration if available
+            if (typeof celebrate === 'function') {
+                celebrate('seal');
+            }
+            // Submit the form after a short delay for animation
             setTimeout(() => {
-                if (confirm('Yakin ingin menyegel kapsul ini? Setelah disegel, tidak bisa diedit lagi.')) {
-                    this.submit();
-                }
-            }, 1000);
+                document.getElementById('seal-form').submit();
+            }, 500);
         }
     });
 </script>
 {% endblock %}
+

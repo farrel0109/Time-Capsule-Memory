@@ -80,18 +80,42 @@
 
 {% block scripts %}
 <script>
-// Countdown timer
-const unlockDate = new Date('{{ cap_unlock }}').getTime();
+// Countdown timer with validation
+const unlockDateStr = '{{ cap_unlock | default("", true) }}';
+let unlockDate = null;
+
+// Parse date - handle YYYY-MM-DD format
+if (unlockDateStr && unlockDateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
+    // Add time to make it midnight of that date
+    unlockDate = new Date(unlockDateStr + 'T00:00:00').getTime();
+}
 
 function updateCountdown() {
+    const daysEl = document.getElementById('days');
+    const hoursEl = document.getElementById('hours');
+    const minutesEl = document.getElementById('minutes');
+    const secondsEl = document.getElementById('seconds');
+    
+    // Check if elements exist
+    if (!daysEl || !hoursEl || !minutesEl || !secondsEl) return;
+    
+    // Check if date is valid
+    if (!unlockDate || isNaN(unlockDate)) {
+        daysEl.textContent = '0';
+        hoursEl.textContent = '0';
+        minutesEl.textContent = '0';
+        secondsEl.textContent = '0';
+        return;
+    }
+    
     const now = new Date().getTime();
     const distance = unlockDate - now;
     
     if (distance < 0) {
-        document.getElementById('days').textContent = '0';
-        document.getElementById('hours').textContent = '0';
-        document.getElementById('minutes').textContent = '0';
-        document.getElementById('seconds').textContent = '0';
+        daysEl.textContent = '0';
+        hoursEl.textContent = '0';
+        minutesEl.textContent = '0';
+        secondsEl.textContent = '0';
         return;
     }
     
@@ -100,12 +124,13 @@ function updateCountdown() {
     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
     
-    document.getElementById('days').textContent = days;
-    document.getElementById('hours').textContent = hours;
-    document.getElementById('minutes').textContent = minutes;
-    document.getElementById('seconds').textContent = seconds;
+    daysEl.textContent = days;
+    hoursEl.textContent = hours;
+    minutesEl.textContent = minutes;
+    secondsEl.textContent = seconds;
 }
 
+// Run countdown
 updateCountdown();
 setInterval(updateCountdown, 1000);
 

@@ -4,7 +4,7 @@
  */
 
 const CACHE_NAME = 'babygrow-cache-v1';
-const OFFLINE_URL = '/offline.html';
+const OFFLINE_URL = '/';
 
 // Assets to cache immediately
 const PRECACHE_ASSETS = [
@@ -119,8 +119,8 @@ self.addEventListener('push', event => {
     
     const options = {
         body: data.body || 'Ada pembaruan dari BabyGrow!',
-        icon: '/static/icons/icon-192x192.png',
-        badge: '/static/icons/icon-72x72.png',
+        icon: '/static/icons/icon-192x192.svg',
+        badge: '/static/icons/icon-192x192.svg',
         vibrate: [100, 50, 100],
         data: {
             url: data.url || '/'

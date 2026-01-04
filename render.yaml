@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: babygrow
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_SECRET
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DATABASE_DIR
+        value: /data
+    disk:
+      name: babygrow-data
+      mountPath: /data
+      sizeGB: 1

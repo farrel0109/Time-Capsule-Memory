@@ -970,16 +970,38 @@ def family_access(child_id):
     ''', (child_id,))
     access_list = cur.fetchall()
     
-    # Generate invite URL
-    import secrets
-    invite_code = secrets.token_urlsafe(16)
-    invite_url = request.host_url + f'join/{invite_code}'
+    # Convert to list of dicts for template and get invite urls
+    access_list_with_urls = []
+    for access in access_list:
+        if isinstance(access, dict):
+            item = dict(access)
+        else:
+            # Convert sqlite Row to dict
+            item = {
+                'id': access[0],
+                'child_id': access[1],
+                'user_id': access[2],
+                'invite_code': access[3],
+                'invite_email': access[4],
+                'role': access[5],
+                'status': access[6],
+                'invited_by': access[7],
+                'accepted_at': access[8],
+                'created_at': access[9],
+                'username': access[10] if len(access) > 10 else None
+            }
+        # Add invite URL
+        item['invite_url'] = request.host_url + f"join/{item['invite_code']}"
+        access_list_with_urls.append(item)
+    
+    # Show example invite URL (will be populated when user invites someone)
+    example_url = request.host_url + 'join/...'
     
     return render_template('family_access.html',
                           child={'id': child['id'] if isinstance(child, dict) else child[0],
                                 'name': child['name'] if isinstance(child, dict) else child[1]},
-                          access_list=access_list,
-                          invite_url=invite_url)
+                          access_list=access_list_with_urls,
+                          invite_url=example_url)
 
 
 @app.route('/child/<int:child_id>/invite', methods=['POST'])

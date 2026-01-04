@@ -50,34 +50,49 @@
             {% if access_list %}
             <div style="display: flex; flex-direction: column; gap: var(--space-md);">
                 {% for access in access_list %}
-                <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-md); background: var(--color-cloud); border-radius: var(--radius-md);">
-                    <div>
-                        <div style="font-weight: 600;">
-                            {% if access.status == 'pending' %}
-                            📧 {{ access.invite_email }}
-                            {% else %}
-                            👤 {{ access.username or access.invite_email }}
-                            {% endif %}
+                <div style="padding: var(--space-md); background: var(--color-cloud); border-radius: var(--radius-md);">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div style="font-weight: 600;">
+                                {% if access.status == 'pending' %}
+                                📧 {{ access.invite_email }}
+                                {% else %}
+                                👤 {{ access.username or access.invite_email }}
+                                {% endif %}
+                            </div>
+                            <div class="text-sm text-muted">
+                                {% if access.role == 'editor' %}
+                                ✏️ Editor
+                                {% else %}
+                                👀 Viewer
+                                {% endif %}
+                                • 
+                                {% if access.status == 'pending' %}
+                                <span class="badge badge-warning">Menunggu</span>
+                                {% else %}
+                                <span class="badge badge-success">Aktif</span>
+                                {% endif %}
+                            </div>
                         </div>
-                        <div class="text-sm text-muted">
-                            {% if access.role == 'editor' %}
-                            ✏️ Editor
-                            {% else %}
-                            👀 Viewer
-                            {% endif %}
-                            • 
-                            {% if access.status == 'pending' %}
-                            <span class="badge badge-warning">Menunggu</span>
-                            {% else %}
-                            <span class="badge badge-success">Aktif</span>
-                            {% endif %}
+                        <form method="POST" action="{{ url_for('revoke_access', child_id=child.id, access_id=access.id) }}" style="margin: 0;">
+                            <button type="submit" class="btn btn-ghost" style="color: var(--color-error);" onclick="return confirm('Yakin ingin mencabut akses?');">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Show invite link for pending invites -->
+                    {% if access.status == 'pending' and access.invite_url %}
+                    <div style="margin-top: var(--space-sm); padding: var(--space-sm); background: var(--color-mint); border-radius: var(--radius-sm);">
+                        <div class="text-xs text-muted" style="margin-bottom: var(--space-xs);">🔗 Link Undangan:</div>
+                        <div style="display: flex; gap: var(--space-xs);">
+                            <input type="text" class="form-input" value="{{ access.invite_url }}" readonly style="flex: 1; font-size: 0.75rem; padding: var(--space-xs);">
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="copyToClipboard('{{ access.invite_url }}')">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
                         </div>
                     </div>
-                    <form method="POST" action="{{ url_for('revoke_access', child_id=child.id, access_id=access.id) }}" style="margin: 0;">
-                        <button type="submit" class="btn btn-ghost" style="color: var(--color-error);" onclick="return confirm('Yakin ingin mencabut akses?');">
-                            <i class="bi bi-x-circle"></i>
-                        </button>
-                    </form>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>
@@ -88,18 +103,16 @@
             {% endif %}
         </div>
         
-        <!-- Share Link -->
-        <div class="card" style="padding: var(--space-lg); margin-top: var(--space-lg); background: var(--color-mint);">
-            <h5 style="margin-bottom: var(--space-sm);">🔗 Link Undangan</h5>
-            <p class="text-sm text-muted" style="margin-bottom: var(--space-md);">
-                Bagikan link ini kepada keluarga yang tidak punya akun BabyGrow
-            </p>
-            <div style="display: flex; gap: var(--space-sm);">
-                <input type="text" class="form-input" value="{{ invite_url }}" id="invite-link" readonly style="flex: 1;">
-                <button class="btn btn-primary" onclick="copyLink()">
-                    <i class="bi bi-clipboard"></i>
-                </button>
-            </div>
+        <!-- Instructions -->
+        <div class="card" style="padding: var(--space-lg); margin-top: var(--space-lg); background: var(--color-lavender);">
+            <h5 style="margin-bottom: var(--space-sm);">💡 Cara Mengundang</h5>
+            <ol style="margin: 0; padding-left: var(--space-lg); color: var(--color-text-muted);">
+                <li>Masukkan email keluarga yang ingin diundang</li>
+                <li>Pilih peran: Viewer atau Editor</li>
+                <li>Klik "Kirim Undangan"</li>
+                <li>Salin link undangan yang muncul & bagikan ke mereka</li>
+                <li>Mereka harus login/register lalu klik link tersebut</li>
+            </ol>
         </div>
     </div>
 </div>
@@ -107,14 +120,19 @@
 
 {% block scripts %}
 <script>
-function copyLink() {
-    const input = document.getElementById('invite-link');
-    input.select();
-    document.execCommand('copy');
-    
-    if (window.BabyGrowCelebrate) {
-        window.BabyGrowCelebrate.showBadge('📋 Link disalin!', '✓');
-    }
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        alert('Link berhasil disalin!');
+    }).catch(function() {
+        // Fallback for older browsers
+        const input = document.createElement('input');
+        input.value = text;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        alert('Link berhasil disalin!');
+    });
 }
 </script>
 {% endblock %}

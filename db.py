@@ -7,7 +7,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = os.path.dirname(__file__)
-DATABASE_DIR = os.path.join(BASE_DIR, 'database')
+
+# Support Render persistent disk via DATABASE_PATH env var
+# Defaults to local database/ directory for development
+DATABASE_DIR = os.environ.get('DATABASE_DIR', os.path.join(BASE_DIR, 'database'))
 DATABASE = os.path.join(DATABASE_DIR, 'balita.db')
 
 # Environment-driven DB selection. Set DB_TYPE=mysql to use MySQL.
